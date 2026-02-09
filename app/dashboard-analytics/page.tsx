@@ -3,8 +3,8 @@ import Content from "@/components/analytics/content"
 import Layout from "@/components/cmsfullform/layout"
 
 export const metadata: Metadata = {
-  title: "CALHIV Analytics Dashboard",
-  description: "Health facility analytics and performance metrics",
+  title: "Pediatric & Adolescent HIV Integration Dashboard",
+  description: "Comprehensive CALHIV program indicators, viral load outcomes, and service integration metrics.",
 }
 
 export default function AnalyticsDashboardPage() {

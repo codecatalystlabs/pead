@@ -95,7 +95,7 @@ export function AHDScreening() {
             tbScreened: { label: "TB Screened", color: "hsl(var(--chart-2))" },
             malScreened: { label: "Malnutrition Screened", color: "hsl(var(--chart-3))" },
           }}
-          className="h-[400px]"
+          className="h-[250px]"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -111,84 +111,33 @@ export function AHDScreening() {
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <div>
-            <h4 className="font-semibold mb-3">CD4 &lt; 200 cells/µL</h4>
-            <div className="space-y-2">
+            <h4 className="font-semibold mb-1">CD4 &lt; 200</h4>
+            <div className="space-y-1">
               {data.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span>{item.ageGroup}</span>
-                  <span className="font-medium text-red-600">{item.cd4Low}</span>
+                <div key={idx} className="flex justify-between">
+                  <span className="truncate">{item.ageGroup}</span>
+                  <span className="font-medium text-red-600 ml-1">{item.cd4Low}</span>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-3">TB Positivity & Treatment</h4>
-            <div className="space-y-2">
+            <h4 className="font-semibold mb-1">TB Pos/Tx</h4>
+            <div className="space-y-1">
               {data.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span>{item.ageGroup}</span>
-                  <span className="font-medium">
-                    <span className="text-red-600">{item.tbPositive}</span> /{" "}
+                <div key={idx} className="flex justify-between">
+                  <span className="truncate">{item.ageGroup}</span>
+                  <span className="font-medium ml-1">
+                    <span className="text-red-600">{item.tbPositive}</span>/
                     <span className="text-green-600">{item.tbTreated}</span>
                   </span>
                 </div>
               ))}
             </div>
           </div>
-          <div>
-            <h4 className="font-semibold mb-3">Malnutrition Cases</h4>
-            <div className="space-y-2">
-              {data.map((item, idx) => (
-                <div key={idx} className="flex justify-between text-sm">
-                  <span>{item.ageGroup}</span>
-                  <span className="font-medium text-orange-600">{item.malPositive} cases</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-        {data.some((item) => item.cragTested > 0) && (
-          <div className="mt-6">
-            <h4 className="font-semibold mb-3">CRAG Testing (≥10 years)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {data
-                .filter((item) => item.cragTested > 0)
-                .map((item, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <h5 className="font-semibold mb-2">{item.ageGroup}</h5>
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span>CRAG Tested:</span>
-                        <span className="font-medium">{item.cragTested}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>CRAG Positive:</span>
-                        <span className="font-medium text-red-600">{item.cragPositive}</span>
-                      </div>
-                      {item.lpDone !== undefined && (
-                        <>
-                          <div className="flex justify-between">
-                            <span>LP Done:</span>
-                            <span className="font-medium">{item.lpDone}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>CSF Negative (Pre-emptive):</span>
-                            <span className="font-medium text-blue-600">{item.preemptiveTx}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>CSF Positive (CM Treatment):</span>
-                            <span className="font-medium text-purple-600">{item.cmTx}</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   )

@@ -27,7 +27,7 @@ export function WeightBandDistribution() {
             clhiv: { label: "CLHIV", color: "hsl(var(--chart-1))" },
             alhiv: { label: "ALHIV", color: "hsl(var(--chart-2))" },
           }}
-          className="h-[350px]"
+          className="h-[250px]"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -40,29 +40,29 @@ export function WeightBandDistribution() {
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-3 grid grid-cols-2 gap-3">
           <div>
-            <h4 className="font-semibold mb-2 text-sm">CLHIV by Weight Band</h4>
-            <div className="space-y-1">
+            <h4 className="font-semibold mb-1 text-xs">CLHIV</h4>
+            <div className="space-y-0.5">
               {data
                 .filter((item) => item.clhiv > 0)
                 .map((item, idx) => (
                   <div key={idx} className="flex justify-between text-xs">
-                    <span>{item.band}</span>
-                    <span className="font-medium">{item.clhiv}</span>
+                    <span className="truncate">{item.band}</span>
+                    <span className="font-medium ml-1">{item.clhiv}</span>
                   </div>
                 ))}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-2 text-sm">ALHIV by Weight Band</h4>
-            <div className="space-y-1">
+            <h4 className="font-semibold mb-1 text-xs">ALHIV</h4>
+            <div className="space-y-0.5">
               {data
                 .filter((item) => item.alhiv > 0)
                 .map((item, idx) => (
                   <div key={idx} className="flex justify-between text-xs">
-                    <span>{item.band}</span>
-                    <span className="font-medium">{item.alhiv}</span>
+                    <span className="truncate">{item.band}</span>
+                    <span className="font-medium ml-1">{item.alhiv}</span>
                   </div>
                 ))}
             </div>

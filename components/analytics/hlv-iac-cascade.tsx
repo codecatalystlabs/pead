@@ -73,7 +73,7 @@ export function HLVIACCascade() {
             unsuppressed: { label: "Unsuppressed After IAC", color: "hsl(var(--chart-4))" },
             drReferred: { label: "DR Testing Referred", color: "hsl(var(--chart-5))" },
           }}
-          className="h-[400px]"
+          className="h-[250px]"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
@@ -91,32 +91,32 @@ export function HLVIACCascade() {
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <div>
-            <h4 className="font-semibold mb-3">IAC Completion (≥3 sessions)</h4>
-            <div className="space-y-2">
+            <h4 className="font-semibold mb-1">IAC ≥3 Sessions</h4>
+            <div className="space-y-1">
               {data.map((item, idx) => {
                 const iac3Plus = item.iac3 + item.iac4Plus
                 const pct = ((iac3Plus / item.hlv) * 100).toFixed(1)
                 return (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <span>{item.ageGroup}</span>
-                    <span className="font-medium">{iac3Plus} ({pct}%)</span>
+                  <div key={idx} className="flex justify-between">
+                    <span className="truncate">{item.ageGroup}</span>
+                    <span className="font-medium ml-1">{iac3Plus} ({pct}%)</span>
                   </div>
                 )
               })}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-3">Suppression After IAC</h4>
-            <div className="space-y-2">
+            <h4 className="font-semibold mb-1">Suppressed</h4>
+            <div className="space-y-1">
               {data.map((item, idx) => {
                 const iac3Plus = item.iac3 + item.iac4Plus
                 const pct = iac3Plus > 0 ? ((item.suppressed / iac3Plus) * 100).toFixed(1) : "0.0"
                 return (
-                  <div key={idx} className="flex justify-between text-sm">
-                    <span>{item.ageGroup}</span>
-                    <span className="font-medium text-green-600">{item.suppressed} ({pct}%)</span>
+                  <div key={idx} className="flex justify-between">
+                    <span className="truncate">{item.ageGroup}</span>
+                    <span className="font-medium text-green-600 ml-1">{item.suppressed} ({pct}%)</span>
                   </div>
                 )
               })}

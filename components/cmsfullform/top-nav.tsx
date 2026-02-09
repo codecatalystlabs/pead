@@ -57,7 +57,9 @@ export default function TopNav() {
             Dashboard
           </Link>
           <span>/</span>
-          <span className="text-gray-900 dark:text-white font-medium">CMS</span>
+          <span className="text-gray-900 dark:text-white font-medium">
+            Pediatric &amp; Adolescent HIV Integration
+          </span>
         </nav>
       </div>
 
@@ -107,8 +109,8 @@ export default function TopNav() {
                 </AvatarFallback>
               </Avatar>
               <div className="hidden lg:flex flex-col items-start">
-                <span className="text-sm font-medium text-gray-900 dark:text-white">John Doe</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">Administrator</span>
+                <span className="text-sm font-medium text-gray-900 dark:text-white">Namakula Andra</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Data &amp; QI Lead</span>
               </div>
               <ChevronDown className="hidden lg:block h-4 w-4 text-gray-500" />
             </Button>

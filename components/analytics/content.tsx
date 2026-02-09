@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link"
 import { SummaryCards } from "./summary-cards"
 import { CareModelDistribution } from "./care-model-distribution"
 import { TransitionTrends } from "./transition-trends"
@@ -12,6 +13,9 @@ import { LLVFollowUp } from "./llv-followup"
 import { DSDMMD } from "./dsd-mmd"
 import { WeightBandDistribution } from "./weight-band-distribution"
 import { PALDTransitionDetails } from "./pald-transition-details"
+import { MMDComponent } from "./mmd-component"
+import { DSDModels } from "./dsd-models"
+import { SupportServices } from "./support-services"
 
 export default function AnalyticsContent() {
   return (
@@ -19,18 +23,25 @@ export default function AnalyticsContent() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">CALHIV Analytics</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            Pediatric & Adolescent HIV Integration Dashboard
+          </h1>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Health facility performance metrics and health outcome indicators
+            Overview of CALHIV in care, treatment coverage, viral load outcomes, service integration, and advanced HIV disease indicators.
           </p>
+          <div className="mt-2">
+            <Link
+              href="/dashboard-analytics/overview"
+              className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
+            >
+              View dashboard guide and indicator explanations
+            </Link>
+          </div>
         </div>
       </div>
 
       {/* Summary Cards */}
       <SummaryCards />
-
-      {/* Weight Band Distribution */}
-      <WeightBandDistribution />
 
       {/* Care Model Distribution & Transition Trends */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
@@ -53,17 +64,24 @@ export default function AnalyticsContent() {
         <ViralLoadIndicators />
       </div>
 
-      {/* AHD Screening */}
-      <AHDScreening />
+      {/* Compact Visualizations Grid - Row 1 */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <WeightBandDistribution />
+        <AHDScreening />
+        <HLVIACCascade />
+      </div>
 
-      {/* High-Level Viremia & IAC Cascade */}
-      <HLVIACCascade />
+      {/* Compact Visualizations Grid - Row 2 */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <LLVFollowUp />
+        <MMDComponent />
+        <DSDModels />
+      </div>
 
-      {/* Low-Level Viremia Follow-Up */}
-      <LLVFollowUp />
-
-      {/* DSD & MMD for CALHIV */}
-      <DSDMMD />
+      {/* Support Services */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <SupportServices />
+      </div>
     </div>
   )
 }
