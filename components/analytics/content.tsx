@@ -7,6 +7,11 @@ import { ARVCommodityStatus } from "./arv-commodity-status"
 import { RetentionAnalysis } from "./retention-analysis"
 import { ViralLoadIndicators } from "./viral-load-indicators"
 import { AHDScreening } from "./ahd-screening"
+import { HLVIACCascade } from "./hlv-iac-cascade"
+import { LLVFollowUp } from "./llv-followup"
+import { DSDMMD } from "./dsd-mmd"
+import { WeightBandDistribution } from "./weight-band-distribution"
+import { PALDTransitionDetails } from "./pald-transition-details"
 
 export default function AnalyticsContent() {
   return (
@@ -24,11 +29,17 @@ export default function AnalyticsContent() {
       {/* Summary Cards */}
       <SummaryCards />
 
+      {/* Weight Band Distribution */}
+      <WeightBandDistribution />
+
       {/* Care Model Distribution & Transition Trends */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
         <CareModelDistribution />
         <TransitionTrends />
       </div>
+
+      {/* pALD Transition Details */}
+      <PALDTransitionDetails />
 
       {/* Capacity Metrics & ARV Commodity Status */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
@@ -44,6 +55,15 @@ export default function AnalyticsContent() {
 
       {/* AHD Screening */}
       <AHDScreening />
+
+      {/* High-Level Viremia & IAC Cascade */}
+      <HLVIACCascade />
+
+      {/* Low-Level Viremia Follow-Up */}
+      <LLVFollowUp />
+
+      {/* DSD & MMD for CALHIV */}
+      <DSDMMD />
     </div>
   )
 }
