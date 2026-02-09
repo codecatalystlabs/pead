@@ -64,22 +64,14 @@ export default function AnalyticsContent() {
         <ViralLoadIndicators />
       </div>
 
-      {/* Compact Visualizations Grid - Row 1 */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      {/* Compact Visualizations - Two per row */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
         <WeightBandDistribution />
         <AHDScreening />
         <HLVIACCascade />
-      </div>
-
-      {/* Compact Visualizations Grid - Row 2 */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <LLVFollowUp />
         <MMDComponent />
         <DSDModels />
-      </div>
-
-      {/* Support Services */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <SupportServices />
       </div>
     </div>
