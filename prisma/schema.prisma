@@ -1,0 +1,381 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Submission: one row per ODK submission. Columns match SVC data types.
+// Groups (form sections) are not modelled as separate tables.
+// Full payload also stored in `data` (Json) for flexibility.
+// ---------------------------------------------------------------------------
+model Submission {
+  id              String    @id // ODK __id
+  data            Json      // Full OData payload
+  submissionDate  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // ---- Section A: Respondent / facility (String, DateTime) ----
+  A_1_Respondent_type              String?
+  A_1_Facility_type                String?
+  A_2_Name_of_reporting_unit       String?
+  A_3_Region                       String?
+  A_4_1_District_Central_Region    String?
+  A_4_2_District_Eastern_Region    String?
+  A_4_3_District_Northern_Region   String?
+  A_4_4_District_Western_Region    String?
+  A_5_Reporting_period_quarter    String?
+  A_6_Date_of_submission_yyyy_mm_dd DateTime?
+  A_8_Designation_role            String?
+
+  // Denormalised for filtering (from A_*)
+  region                          String?
+  district                        String?
+  facility                        String?
+
+  // ---- Section B: CALHIV in care (Int) ----
+  total_calhiv_at_hf              Int?
+  calhiv_3_5_9_kg                 Int?
+  calhiv_6_9_9_kg                 Int?
+  calhiv_10_13_9_kg               Int?
+  calhiv_14_19_9_kg               Int?
+  calhiv_20_24_9_kg               Int?
+  B_2_6_How_many_ALHIV_ving_care_at_this_HF Int?
+  calhiv_greater_than_25_kg       Int?
+  B_2_8_How_many_ALHIV_ving_care_at_this_HF Int?
+  B_3_1_Number_CLHIV_0_4_yrs      Int?
+  B_3_2_How_many_CLHIV_5_9        Int?
+  B_3_3_How_many_ALHIV_aged_10_1  Int?
+  B_3_4_No_ALHIV_aged_15_19       Int?
+
+  // ---- Section C: pALD / non-pALD (Int) ----
+  C_1_1_How_many_CLHIV_non_pALD_formulation   Int?
+  C_1_2_How_many_CLHIV_non_pALD_formulation   Int?
+  C_1_3_How_many_CLHIV_non_pALD_formulation   Int?
+  C_1_4_How_many_CLHIV_non_pALD_formulation   Int?
+  C_1_5_How_many_CLHIV_non_pALD_formulation   Int?
+  C_1_6_How_many_ALHIV_non_pALD_formulation   Int?
+  C_1_7_How_many_ALHIV_non_pALD_formulation   Int?
+  C_2_1_How_many_CLHIV_non_pALD_formulation   Int?
+  C_2_2_How_many_CLHIV_non_pALD_formulation   Int?
+  C_2_3_How_many_ALHIV_non_pALD_formulation   Int?
+  C_2_4_How_many_ALHIV_non_pALD_formulation   Int?
+  C_3_1_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_3_2_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_3_3_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_3_4_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_3_5_How_many_CLHIV_mg_pALD_formulation    Int?
+  pald_3_5_9_kg                    Int?
+  pald_6_9_9_kg                    Int?
+  pald_10_13_9_kg                  Int?
+  pald_14_19_9_kg                  Int?
+  pald_20_24_9_kg                  Int?
+  C_5_1_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_5_2_How_many_CLHIV_mg_pALD_formulation    Int?
+  C_5_3_How_many_ALHIV_mg_pALD_formulation    Int?
+  C_5_4_How_many_ALHIV_mg_pALD_formulation    Int?
+  C_5_1_How_many_CLHIV_mg_pALD_formulation_001 Int?
+  C_5_2_How_many_CLHIV_mg_pALD_formulation_001 Int?
+  C_5_3_How_many_ALHIV_mg_pALD_formulation_001 Int?
+  C_5_4_How_many_ALHIV_mg_pALD_formulation_001 Int?
+  no_hf_staff_eligible_pald        Int?
+  number_hf_staff_oriented_pald    Int?
+  C_9_1_Has_this_HF_re_ved_pALD_orientation   String?
+  C_9_2_Is_the_HF_curr_combination_of_pALD     String?
+
+  // ---- Section E: Integration / care models (Int, String) ----
+  E_1_1_Has_this_HF_re_ation_on_integration   String?
+  total_number_of_staff_hf         Int?
+  E_1_3_Is_the_HF_curr_integrating_services   String?
+  B_4_4_If_yes_to_integrated_ser              String?
+  number_at_hf_mixed_opd          Int?
+  number_at_hf_clinic_day         Int?
+  number_at_hf_other_models       Int?
+
+  // ---- Section F: Capacity building (Int, String) ----
+  total_number_hw_at_site         Int?
+  number_hw_trained_integra       Int?
+  F_1_4_What_mode_of_training_in              String?
+  F_1_5_Have_you_had_support_sup              String?
+  F_1_6_Have_you_had_c_his_reporting_period   String?
+  F_1_7_What_topics_areas_were                String?
+
+  // ---- Section G: ARV commodities (Int, String) ----
+  G_1_1_Which_of_the_f_t_this_HF_for_CALHIV   String?
+  D_1_Which_of_the_following_sec              String?
+  G_1_2_a_How_many_CAL_second_line_regimens   Int?
+  G_1_2_b_How_many_CAL_second_line_regimen    Int?
+  G_1_3_Which_of_the_f_t_this_HF_for_CALHIV   String?
+  G_1_3_a_How_many_CAL_third_line_regimens    Int?
+  F_2_1_Does_your_site_provide_p              String?
+  G_3_1_What_is_the_cu_C_3TC_DTG_60_30_5_mg   Int?
+  G_3_2_What_is_the_av_for_this_formulation   Int?
+  G_3_3_What_is_the_mo_tock_MOS_available     Int?
+  G_4_1_What_is_the_cu_or_ABC_3TC_120_60_mg   Int?
+  G_4_2_What_is_the_av_for_this_formulation   Int?
+  G_4_3_What_is_the_mo_tock_MOS_available      Int?
+  G_5_1_What_is_the_cu_packs_for_DTG_10_mg    Int?
+  G_5_2_What_is_the_av_for_this_formulation   Int?
+  G_5_3_What_is_the_mo_tock_MOS_available     Int?
+  G_6_1_What_is_the_cu_for_AZT_3TC_60_30_mg   Int?
+  G_6_2_What_is_the_av_for_this_formulation   Int?
+  G_6_3_What_is_the_mo_tock_MOS_available     Int?
+
+  // ---- Section H: AHD screening (Int) ----
+  H_1_1_How_many_CLHIV_his_reporting_period    Int?
+  H_1_2_How_many_CLHIV_his_reporting_period    Int?
+  H_1_3_How_many_CLHIV_ays_of_disengagement    Int?
+  H_1_4_How_many_CLHIV_g_during_this_period    Int?
+  H_1_5_How_many_CLHIV_iven_as_a_percentage    Int?
+  H_1_6_How_many_had_C_ercentage_CD4_cutoff    Int?
+  H_1_7_How_many_were_TB_LAM_and_GeneXpert     Int?
+  H_1_8_How_many_teste_TBLAM_and_GeneXpert     Int?
+  H_1_9_How_many_of_th_ed_anti_TB_treatment    Int?
+  H_1_10_How_many_test_TBLAM_and_GeneXpert     Int?
+  H_1_11_Of_those_who_ow_many_received_TPT     Int?
+  H_1_12_How_many_received_CTX_prophylaxis     Int?
+  H_1_13_How_many_were_nutrition_using_MUAC     Int?
+  H_1_14_How_many_were_malnourished             Int?
+  H_1_15_How_many_maln_ion_for_malnutrition    Int?
+  H_2_1_How_many_CLHIV_his_reporting_period    Int?
+  H_2_2_How_many_CLHIV_his_reporting_period    Int?
+  H_2_3_How_many_CLHIV_ays_of_disengagement    Int?
+  H_2_4_How_many_CLHIV_g_during_this_period    Int?
+  H_2_5_How_many_CLHIV_had_a_CD4_test_done     Int?
+  H_2_6_How_many_CLHIV_ad_CD4_200_cells_L      Int?
+  H_2_7_How_many_were_TB_LAM_and_GeneXpert     Int?
+  H_2_8_How_many_teste_TBLAM_and_GeneXpert     Int?
+  H_2_9_How_many_of_th_ed_anti_TB_treatment    Int?
+  H_2_10_How_many_test_TBLAM_and_GeneXpert      Int?
+  H_2_11_Of_those_who_ow_many_received_TPT     Int?
+  H_2_12_How_many_received_CTX_prophylaxis      Int?
+  H_2_13_How_many_were_nutrition_using_MUAC    Int?
+  H_2_14_How_many_were_malnourished            Int?
+  H_2_15_How_many_maln_ion_for_malnutrition    Int?
+  H_3_1_How_many_ALHIV_his_reporting_period    Int?
+  H_3_2_How_many_ALHIV_his_reporting_period    Int?
+  H_3_3_How_many_ALHIV_ays_of_disengagement    Int?
+  H_3_4_How_many_ALHIV_creening_this_period    Int?
+  H_3_5_How_many_ALHIV_had_a_CD4_test_done     Int?
+  H_3_6_How_many_ALHIV_ad_CD4_200_cells_L      Int?
+  H_3_7_How_many_were_TB_LAM_and_GeneXpert      Int?
+  H_3_8_How_many_teste_TBLAM_and_GeneXpert      Int?
+  H_3_9_How_many_of_th_ed_anti_TB_treatment     Int?
+  H_3_10_How_many_test_TBLAM_and_GeneXpert      Int?
+  H_3_11_Of_those_who_ow_many_received_TPT      Int?
+  H_3_12_How_many_received_CTX_prophylaxis      Int?
+  H_3_13_How_many_were_nutrition_using_MUAC     Int?
+  H_3_14_How_many_were_malnourished             Int?
+  H_3_15_How_many_maln_ion_for_malnutrition     Int?
+  H_3_16_How_many_rece_test_10_years_only      Int?
+  H_3_17_Of_those_who_many_tested_positive      Int?
+  H_3_18_Of_those_who_ot_a_lumbar_puncture      Int?
+  H_3_19_Of_those_who_a_negative_CSF_CRAG      Int?
+  H_3_20_Of_those_who_re_emptive_treatment     Int?
+  H_3_21_How_many_were_nt_in_the_past_month    Int?
+  H_3_22_Of_those_that_atment_and_are_alive   Int?
+  H_3_23_Of_those_that_how_many_were_LTFU      Int?
+  H_3_24_Of_those_that_month_how_many_died     Int?
+  H_3_25_Of_those_who_a_positive_CSF_CRAG     Int?
+  H_3_26_Of_those_who_gitis_CM_treatment      Int?
+  H_3_27_Of_those_who_nt_in_the_past_month     Int?
+  H_3_28_How_many_were_nt_in_the_past_month     Int?
+  H_3_29_Of_those_that_atment_and_are_alive    Int?
+  H_3_30_Of_those_that_how_many_were_LTFU      Int?
+  H_3_31_Of_those_that_month_how_many_died     Int?
+  H_4_1_How_many_ALHIV_his_reporting_period    Int?
+  H_4_2_How_many_ALHIV_his_reporting_period    Int?
+  H_4_3_How_many_ALHIV_ays_of_disengagement    Int?
+  H_4_4_How_many_ALHIV_creening_this_period    Int?
+  H_4_5_How_many_ALHIV_had_a_CD4_test_done     Int?
+  H_4_6_How_many_ALHIV_ad_CD4_200_cells_L      Int?
+  H_4_7_How_many_were_TB_LAM_and_GeneXpert      Int?
+  H_4_8_How_many_teste_TBLAM_and_GeneXpert      Int?
+  H_4_9_How_many_of_th_ed_anti_TB_treatment     Int?
+  H_4_10_How_many_test_TBLAM_and_GeneXpert      Int?
+  H_4_11_Of_those_who_ow_many_received_TPT      Int?
+  H_4_12_How_many_received_CTX_prophylaxis      Int?
+  H_4_13_How_many_were_nutrition_using_MUAC     Int?
+  H_4_14_How_many_were_malnourished             Int?
+  H_4_15_How_many_maln_ion_for_malnutrition     Int?
+  H_4_16_How_many_rece_test_10_years_only      Int?
+  H_4_17_Of_those_who_any_tested_positive_     Int?
+  H_4_18_Of_those_who_ot_a_lumbar_puncture     Int?
+  H_4_19_Of_those_who_a_negative_CSF_CRAG      Int?
+  H_4_20_Of_those_who_re_emptive_treatment     Int?
+  H_4_21_How_many_were_nt_in_the_past_month     Int?
+  H_4_22_Of_those_that_atment_and_are_alive    Int?
+  H_4_23_Of_those_that_how_many_were_LTFU       Int?
+  H_4_24_Of_those_that_month_how_many_died      Int?
+  H_4_25_Of_those_who_a_positive_CSF_CRAG      Int?
+  H_4_26_Of_those_who_gitis_CM_treatment       Int?
+  H_4_27_Of_those_who_nt_in_the_past_month      Int?
+  H_4_28_Of_those_who_nt_in_the_past_month      Int?
+  H_4_29_Of_those_that_atment_and_are_alive     Int?
+  H_4_30_Of_those_that_how_many_were_LTFU       Int?
+  H_4_31_Of_those_that_month_how_many_died      Int?
+  H_5_1_Does_this_HF_h_ate_Visitec_supplies    String?
+  H_5_2_Availability_o_s_and_reagents_at_HF    String?
+  H_5_3_Availability_o_CRAG_supplies_at_HF     String?
+  H_5_4_Availability_o_CRAG_supplies_at_HF     String?
+  H_5_5_Availability_o_PT_prophylaxis_at_HF    String?
+  H_5_6_Availability_o_conazole_prophylaxis   String?
+  H_5_7_Availability_of_CTX_prophylaxis       String?
+  H_5_8_Availability_of_anti_TB_drugs          String?
+  H_5_9_Availability_o_posomal_amphotericin   String?
+  H_5_10_Availability_of_RUTF_75_and_100       String?
+  H_5_11_Availability_of_dewormers             String?
+
+  // ---- Section I: Retention (Int, String) ----
+  I_1_How_many_CALHIV_or_review_last_month     Int?
+  I_1_1_Of_those_who_w_r_their_appointments   Int?
+  I_1_2_For_those_who_id_the_HF_staff_take     String?
+
+  // ---- Section J: Viral load (Int) ----
+  J_1_1_Number_of_children_updat               Int?
+  J_1_3_Number_of_chil_al_Load_0_4_years       Int?
+  J_1_4_Number_of_children_supp                Int?
+  J_2_1_Number_child_updated_vl                 Int?
+  J_2_3_Number_of_chil_al_Load_5_9_years       Int?
+  J_2_4_Number_child_supp_vl                    Int?
+  J_3_1_Number_of_children_updat                Int?
+  J_3_3_Number_of_chil_Load_10_14_years        Int?
+  J_3_4_No_of_child_viral_supp                 Int?
+  J_4_1_No_an_updated_vl_15_19                 Int?
+  J_4_3_Number_missing_Load_15_19_years       Int?
+  J_4_4_No_virally_suppressed                   Int?
+  J_5_1_tt_no_updated_vl_all                   Int?
+  J_5_3_Total_number_m_a_recent_Viral_Load     Int?
+  J_5_4_Tt_no_of_CALHIV_supp                   Int?
+
+  // ---- Section K: HLV / IAC cascade (Int) ----
+  K_1_1_No_clhiv_hlv_0_4                       Int?
+  K_1_2_Number_who_com_high_level_viraemia    Int?
+  K_1_3_Number_who_com_high_level_viraemia    Int?
+  K_1_4_Number_who_com_high_level_viraemia    Int?
+  K_1_5_No_comp_3iac_0_4                       Int?
+  K_1_6_No_comp_4iac_0_4                       Int?
+  K_1_8_No_viral_supp_3iac_0_4                 Int?
+  K_1_10_Number_still_high_level_viraemia      Int?
+  K_1_11_Number_referr_high_level_viraemia     Int?
+  K_2_1_No_CALHIV_with_hlv                    Int?
+  K_2_2_Number_who_com_high_level_viraemia     Int?
+  K_2_3_Number_who_com_high_level_viraemia     Int?
+  K_2_4_Number_who_com_high_level_viraemia     Int?
+  K_2_5_No_completed_3_iac_5_9                Int?
+  K_2_6_No_completed_4_iac_5_9                Int?
+  K_2_8_Number_who_ach_high_level_viraemia    Int?
+  K_2_10_Number_still_high_level_viraemia      Int?
+  K_2_11_Number_referr_high_level_viraemia    Int?
+  K_3_1_No_of_CLHIV_hlv                        Int?
+  K_3_2_Number_who_com_high_level_viraemia     Int?
+  K_3_3_Number_who_com_high_level_viraemia     Int?
+  K_3_4_Number_who_com_high_level_viraemia     Int?
+  K_3_5_No_completed_3_iac_10_14               Int?
+  K_3_6_No_completed_4_iac_10_14               Int?
+  K_3_8_No_achieved_supp_3_more                Int?
+  K_3_10_Number_still_high_level_viraemia      Int?
+  K_3_11_Number_referr_high_level_viraemia     Int?
+  K_4_1_No_of_CALHIV_hlv                       Int?
+  K_4_2_Number_who_com_high_level_viraemia     Int?
+  K_4_3_Number_who_com_high_level_viraemia     Int?
+  K_4_4_Number_who_com_high_level_viraemia     Int?
+  K_4_5_No_completed_3_iac                     Int?
+  K_4_6_No_completed_4_iac                     Int?
+  K_4_8_No_achieved_supp                      Int?
+  K_4_10_Number_still_high_level_viraemia      Int?
+  K_4_11_Number_referr_high_level_viraemia     Int?
+
+  // ---- Section L: LLV (Int) ----
+  L_1_1_No_of_CALHIV_with_llv                  Int?
+  L_1_2_Number_who_com_h_low_level_viraemia    Int?
+  L_1_3_Number_who_com_h_low_level_viraemia    Int?
+  L_1_4_Number_who_com_h_low_level_viraemia    Int?
+  L_1_5_Number_who_com_h_low_level_viraemia    Int?
+  L_1_6_Number_who_com_h_low_level_viraemia    Int?
+  L_1_7_No_who_achieved_supp                   Int?
+  L_1_9_Number_still_w_h_low_level_viraemia    Int?
+  L_2_1_No_CALHIV_with_llv                     Int?
+  L_2_2_Number_who_com_h_low_level_viraemia     Int?
+  L_2_3_Number_who_com_h_low_level_viraemia    Int?
+  L_2_4_Number_who_com_h_low_level_viraemia     Int?
+  L_2_5_Number_who_com_h_low_level_viraemia     Int?
+  L_2_6_Number_who_com_h_low_level_viraemia     Int?
+  L_2_7_No_who_achieved_supp                   Int?
+  L_2_9_Number_still_w_h_low_level_viraemia    Int?
+  L_3_1_No_of_CALHIV_with_llv                  Int?
+  L_3_2_Number_who_com_h_low_level_viraemia     Int?
+  L_3_3_Number_who_com_h_low_level_viraemia     Int?
+  L_3_4_Number_who_com_h_low_level_viraemia     Int?
+  L_3_5_Number_who_com_h_low_level_viraemia     Int?
+  L_3_6_Number_who_com_h_low_level_viraemia     Int?
+  L_3_7_No_who_achieved_supp                   Int?
+  L_3_9_Number_still_w_h_low_level_viraemia    Int?
+  L_4_1_No_of_CALHIV_llv                       Int?
+  L_4_2_Number_who_com_h_low_level_viraemia     Int?
+  L_4_3_Number_who_com_h_low_level_viraemia     Int?
+  L_4_4_Number_who_com_h_low_level_viraemia     Int?
+  L_4_5_Number_who_com_h_low_level_viraemia     Int?
+  L_4_6_Number_who_com_h_low_level_viraemia     Int?
+  L_4_7_No_who_achieved_supp                   Int?
+  L_4_9_Number_still_w_h_low_level_viraemia    Int?
+
+  // ---- Section M: DSD / MMD (Int) ----
+  M_1_1_No_enrolled_in_a_psy                   Int?
+  M_1_3_Number_enrolled_in_peer                Int?
+  M_2_1_No_receiving_MMD_3                     Int?
+  M_2_3_Nuo_receiving_MMD_6                    Int?
+  M_3_1_No_under_Cddp                          Int?
+  M_3_3_No_under_Cclad                         Int?
+  M_3_5_No_under_Crpddp                         Int?
+  M_3_7_No_under_Fbim                          Int?
+  M_3_9_No_under_Fbg                           Int?
+  M_3_11_No_under_Ftdr                         Int?
+}
+
+model SyncLog {
+  id                  Int       @id @default(autoincrement())
+  startedAt           DateTime  @default(now())
+  finishedAt          DateTime?
+  status              SyncStatus
+  message             String?
+  lastSubmissionDate  DateTime?
+}
+
+model User {
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique
+  passwordHash       String
+  role               Role
+  jurisdictionLevel  JurisdictionLevel
+  region             String?
+  district           String?
+  facility           String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime?          @updatedAt
+}
+
+enum Role {
+  ADMIN
+  NATIONAL
+  REGIONAL
+  DISTRICT
+  FACILITY
+}
+
+enum JurisdictionLevel {
+  NATIONAL
+  REGIONAL
+  DISTRICT
+  FACILITY
+}
+
+enum SyncStatus {
+  SUCCESS
+  FAILED
+  RUNNING
+}

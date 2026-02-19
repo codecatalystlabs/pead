@@ -1,16 +1,27 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { commodity: string; mos: number; optimal: number; status: string }
+
 export function ARVCommodityStatus() {
-  const data = [
-    { commodity: "pALD (60/30/5)", mos: 4.2, optimal: 3, status: "good" },
-    { commodity: "ABC/3TC (120/60)", mos: 2.8, optimal: 3, status: "warning" },
-    { commodity: "DTG 10mg", mos: 3.1, optimal: 3, status: "good" },
-    { commodity: "AZT/3TC (60/30)", mos: 1.9, optimal: 3, status: "critical" },
-  ]
+  const [data, setData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/commodities", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setData(json.data ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No commodity data</p></CardContent></Card>
 
   return (
     <Card>

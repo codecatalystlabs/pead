@@ -1,18 +1,27 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { model: string; number: number; percentage: number }
+
 export function DSDModels() {
-  const dsdData = [
-    { model: "CDDP", number: 456, percentage: 16.0 },
-    { model: "CCLAD", number: 623, percentage: 21.9 },
-    { model: "CRPDDP", number: 234, percentage: 8.2 },
-    { model: "FBIM", number: 892, percentage: 31.3 },
-    { model: "FBG", number: 342, percentage: 12.0 },
-    { model: "FTDR", number: 300, percentage: 10.5 },
-  ]
+  const [dsdData, setDsdData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/dsd-mmd", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setDsdData(json.dsdData ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-xs text-red-600">{error}</p></CardContent></Card>
+  if (!dsdData.length) return <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">No DSD data</p></CardContent></Card>
 
   const COLORS = [
     "hsl(var(--chart-1))",

@@ -1,23 +1,44 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-export function CareModelDistribution() {
-  const data = [
-    { name: "Mixed OPD", value: 42, patients: 1194 },
-    { name: "Chronic Care/Clinic Day", value: 38, patients: 1078 },
-    { name: "Other Models", value: 20, patients: 575 },
-  ]
+const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))"]
+const FALLBACK = [
+  { name: "Mixed OPD", value: 0, patients: 0 },
+  { name: "Chronic Care/Clinic Day", value: 0, patients: 0 },
+  { name: "Other Models", value: 0, patients: 0 },
+]
 
-  const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))"]
+export function CareModelDistribution() {
+  const [data, setData] = useState<{ name: string; value: number; patients: number }[]>(FALLBACK)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const { queryString } = useDashboardFilters()
+  useEffect(() => {
+    let isMounted = true
+    fetch(`/api/analytics/pald${queryString}`, { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
+      .then((json) => {
+        if (isMounted && Array.isArray(json.careModelData)) setData(json.careModelData)
+      })
+      .catch((e) => { if (isMounted) setError(e?.message ?? "Failed to load") })
+      .finally(() => { if (isMounted) setLoading(false) })
+    return () => { isMounted = false }
+  }, [queryString])
+
+  if (error) return <Card><CardHeader><CardTitle>Care Model Distribution</CardTitle></CardHeader><CardContent><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (loading) return <Card><CardHeader><CardTitle>Care Model Distribution</CardTitle></CardHeader><CardContent><div className="h-[300px] animate-pulse bg-muted rounded" /></CardContent></Card>
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Care Model Distribution</CardTitle>
-        <CardDescription>Distribution of CALHIV across care models (% of facilities)</CardDescription>
+        <CardDescription>Distribution of CALHIV across care models (numerator / denominator)</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -44,7 +65,17 @@ export function CareModelDistribution() {
                   <Cell key={`cell-${index}`} fill={COLORS[index]} />
                 ))}
               </Pie>
-              <ChartTooltip content={<ChartTooltipContent formatter={(value) => `${value}% of facilities`} />} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, item) => {
+                      const p = item?.payload as { name?: string; value?: number; patients?: number }
+                      const denom = (data.reduce((a, r) => a + r.patients, 0)) || 1
+                      return `${p?.patients?.toLocaleString() ?? value} / ${denom.toLocaleString()} (${value}%)`
+                    }}
+                  />
+                }
+              />
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>

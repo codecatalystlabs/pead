@@ -1,29 +1,42 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function ViralLoadIndicators() {
-  const data = [
-    { ageGroup: "< 3 months", suppressed: 85, dtu: 92 },
-    { ageGroup: "3mo - 3yr", suppressed: 88, dtu: 95 },
-    { ageGroup: "3 - 10 years", suppressed: 89, dtu: 94 },
-    { ageGroup: "10 - 14 years", suppressed: 87, dtu: 93 },
-    { ageGroup: "15 - 19 years", suppressed: 86, dtu: 91 },
-  ]
+  const [data, setData] = useState<{ ageGroup: string; suppressedPct: number; dtgPct: number }[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const { queryString } = useDashboardFilters()
+  useEffect(() => {
+    let isMounted = true
+    fetch(`/api/analytics/viral-load${queryString}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => {
+        if (!isMounted) return
+        setData((json.data ?? []).map((r: { ageGroup: string; suppressedPct: number; dtgPct: number }) => ({ ageGroup: r.ageGroup, suppressedPct: r.suppressedPct, dtgPct: r.dtgPct })))
+      })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [queryString])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No viral load data</p></CardContent></Card>
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Viral Load & DTG Coverage</CardTitle>
+        <CardTitle>Viral Load Coverage and Suppression</CardTitle>
         <CardDescription>VL suppression and DTG-based regimen coverage by age group (%)</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={{
-            suppressed: { label: "VL Suppressed", color: "hsl(var(--chart-1))" },
-            dtu: { label: "On DTG-based", color: "hsl(var(--chart-2))" },
+            suppressedPct: { label: "VL Suppressed %", color: "hsl(var(--chart-1))" },
+            dtgPct: { label: "On DTG-based %", color: "hsl(var(--chart-2))" },
           }}
           className="h-[300px]"
         >
@@ -31,19 +44,29 @@ export function ViralLoadIndicators() {
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ageGroup" angle={-45} textAnchor="end" height={80} />
-              <YAxis domain={[80, 100]} />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <YAxis domain={[0, 100]} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, _item, _index, row) => {
+                      const r = row as { updated?: number; suppressed?: number }
+                      if (name === "VL Suppressed %" && r?.updated) return `${r.suppressed ?? value} / ${r.updated} (${value}%)`
+                      return `${value}%`
+                    }}
+                  />
+                }
+              />
               <Legend />
               <Line
                 type="monotone"
-                dataKey="suppressed"
+                dataKey="suppressedPct"
                 stroke="hsl(var(--chart-1))"
                 strokeWidth={2}
                 dot={{ fill: "hsl(var(--chart-1))" }}
               />
               <Line
                 type="monotone"
-                dataKey="dtu"
+                dataKey="dtgPct"
                 stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
                 dot={{ fill: "hsl(var(--chart-2))" }}

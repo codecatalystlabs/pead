@@ -1,15 +1,29 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { cohort: string; active: number; ltfu: number; dead: number; transferredOut: number; transferredIn: number }
+
 export function RetentionAnalysis() {
-  const data = [
-    { cohort: "3-Month", active: 94, ltfu: 3, dead: 1, transferred: 2 },
-    { cohort: "6-Month", active: 92, ltfu: 4, dead: 2, transferred: 2 },
-    { cohort: "12-Month", active: 94, ltfu: 3, dead: 1, transferred: 2 },
-  ]
+  const [data, setData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/capacity", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setData(json.retentionData ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No retention data</p></CardContent></Card>
+
+  const chartData = data.map((r) => ({ ...r, transferred: r.transferredOut + r.transferredIn }))
 
   return (
     <Card>
@@ -28,7 +42,7 @@ export function RetentionAnalysis() {
           className="h-[300px]"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 100 }}>
+            <BarChart data={chartData} layout="vertical" margin={{ left: 100 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="cohort" />

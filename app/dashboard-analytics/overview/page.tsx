@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import Layout from "@/components/cmsfullform/layout"
+import { DashboardNav } from "@/components/analytics/dashboard-nav"
 
 export const metadata: Metadata = {
   title: "Dashboard Guide – Pediatric & Adolescent HIV Integration",
@@ -63,6 +64,7 @@ export default function AnalyticsOverviewPage() {
     <Layout>
       <main className="w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 bg-slate-50 dark:bg-[#020617]">
         <div className="mx-auto max-w-6xl space-y-8">
+          <DashboardNav />
           {/* Hero / Intro */}
           <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">

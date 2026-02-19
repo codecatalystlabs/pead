@@ -1,19 +1,30 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function WeightBandDistribution() {
-  const data = [
-    { band: "3 - 5.9 kg", clhiv: 145, alhiv: 0 },
-    { band: "6 - 9.9 kg", clhiv: 198, alhiv: 0 },
-    { band: "10 - 13.9 kg", clhiv: 267, alhiv: 0 },
-    { band: "14 - 19.9 kg", clhiv: 312, alhiv: 0 },
-    { band: "20 - 24.9 kg", clhiv: 289, alhiv: 156 },
-    { band: "25 - 29.9 kg", clhiv: 0, alhiv: 423 },
-    { band: "≥30 kg", clhiv: 0, alhiv: 1213 },
-  ]
+  const [data, setData] = useState<{ band: string; clhiv: number; alhiv: number }[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const { queryString } = useDashboardFilters()
+  useEffect(() => {
+    let isMounted = true
+    fetch(`/api/analytics/pald${queryString}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => {
+        if (!isMounted) return
+        setData(json.weightBandData ?? [])
+      })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [queryString])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No weight band data</p></CardContent></Card>
 
   return (
     <Card>
@@ -34,7 +45,17 @@ export function WeightBandDistribution() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="band" angle={-45} textAnchor="end" height={100} />
               <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={(value, name, _item, _index, row) => {
+                    const r = row as { clhiv?: number; alhiv?: number }
+                    const total = (r?.clhiv ?? 0) + (r?.alhiv ?? 0)
+                    return `${Number(value).toLocaleString()} / ${total > 0 ? total.toLocaleString() : "—"} (${name})`
+                  }}
+                />
+              }
+            />
               <Bar dataKey="clhiv" fill="hsl(var(--chart-1))" />
               <Bar dataKey="alhiv" fill="hsl(var(--chart-2))" />
             </BarChart>

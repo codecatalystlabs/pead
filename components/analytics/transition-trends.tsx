@@ -1,18 +1,30 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function TransitionTrends() {
-  const data = [
-    { month: "Jan", pALD: 45, nonPALD: 55 },
-    { month: "Feb", pALD: 52, nonPALD: 48 },
-    { month: "Mar", pALD: 58, nonPALD: 42 },
-    { month: "Apr", pALD: 65, nonPALD: 35 },
-    { month: "May", pALD: 70, nonPALD: 30 },
-    { month: "Jun", pALD: 72, nonPALD: 28 },
-  ]
+  const [data, setData] = useState<{ month: string; pALD: number; nonPALD: number }[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const { queryString } = useDashboardFilters()
+  useEffect(() => {
+    let isMounted = true
+    fetch(`/api/analytics/pald${queryString}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => {
+        if (!isMounted) return
+        setData(json.transitionTrendsData ?? [])
+      })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [queryString])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No trend data</p></CardContent></Card>
 
   return (
     <Card>
@@ -33,7 +45,16 @@ export function TransitionTrends() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    formatter={(value) => {
+                      const pct = Number(value)
+                      return `pALD: ${pct}% · non-pALD: ${100 - pct}% (of period total)`
+                    }}
+                  />
+                }
+              />
               <Legend />
               <Line
                 type="monotone"

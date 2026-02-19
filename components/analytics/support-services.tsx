@@ -1,14 +1,27 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { service: string; enrolled: number; total: number }
+
 export function SupportServices() {
-  const supportData = [
-    { service: "Psychosocial Support", enrolled: 156, total: 223 },
-    { service: "Peer Support/Teen Club", enrolled: 289, total: 445 },
-  ]
+  const [supportData, setSupportData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/dsd-mmd", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setSupportData(json.supportData ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-xs text-red-600">{error}</p></CardContent></Card>
+  if (!supportData.length) return <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">No support services data</p></CardContent></Card>
 
   return (
     <Card>
@@ -38,7 +51,7 @@ export function SupportServices() {
         </ChartContainer>
         <div className="mt-2 space-y-1">
           {supportData.map((item, idx) => {
-            const pct = ((item.enrolled / item.total) * 100).toFixed(1)
+            const pct = item.total > 0 ? ((item.enrolled / item.total) * 100).toFixed(1) : "0.0"
             return (
               <div key={idx} className="flex items-center justify-between text-xs">
                 <span className="truncate">{item.service}</span>

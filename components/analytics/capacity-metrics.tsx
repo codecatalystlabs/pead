@@ -1,17 +1,27 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { cadre: string; trained: number; total: number; pct: number }
+
 export function CapacityMetrics() {
-  const data = [
-    { cadre: "Doctors", trained: 28, total: 30 },
-    { cadre: "Clinical Officers", trained: 45, total: 48 },
-    { cadre: "Nurses", trained: 92, total: 105 },
-    { cadre: "Midwives", trained: 34, total: 38 },
-    { cadre: "Peer Supporters", trained: 18, total: 22 },
-  ]
+  const [data, setData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/capacity", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setData(json.data ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No capacity data</p></CardContent></Card>
 
   return (
     <Card>

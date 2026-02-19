@@ -13,6 +13,7 @@ import Link from "next/link"
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,12 +22,27 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsLoading(false)
-    // Redirect to dashboard
-    window.location.href = "/dashboard"
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: formData.email, password: formData.password }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data.error ?? `Login failed (${res.status})`)
+        setIsLoading(false)
+        return
+      }
+      // Cookie is set by the response; redirect to analytics dashboard
+      window.location.href = "/dashboard-analytics"
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Login failed")
+      setIsLoading(false)
+    }
   }
 
   const backgroundPattern =
@@ -159,6 +175,12 @@ export function LoginForm() {
                 </button>
               </div>
             </div>
+
+            {error && (
+              <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">

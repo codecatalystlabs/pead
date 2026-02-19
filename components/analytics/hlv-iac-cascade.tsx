@@ -1,60 +1,29 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { ageGroup: string; hlv: number; iac3: number; iac4Plus: number; suppressed: number; unsuppressed: number; drReferred: number }
+
 export function HLVIACCascade() {
-  const data = [
-    {
-      ageGroup: "0 - 4 years",
-      hlv: 45,
-      iac0: 8,
-      iac1: 5,
-      iac2: 7,
-      iac3: 12,
-      iac4Plus: 13,
-      suppressed: 18,
-      unsuppressed: 7,
-      drReferred: 2,
-    },
-    {
-      ageGroup: "5 - 9 years",
-      hlv: 52,
-      iac0: 9,
-      iac1: 6,
-      iac2: 8,
-      iac3: 14,
-      iac4Plus: 15,
-      suppressed: 22,
-      unsuppressed: 7,
-      drReferred: 3,
-    },
-    {
-      ageGroup: "10 - 14 years",
-      hlv: 68,
-      iac0: 12,
-      iac1: 8,
-      iac2: 10,
-      iac3: 18,
-      iac4Plus: 20,
-      suppressed: 28,
-      unsuppressed: 10,
-      drReferred: 4,
-    },
-    {
-      ageGroup: "15 - 19 years",
-      hlv: 58,
-      iac0: 10,
-      iac1: 7,
-      iac2: 9,
-      iac3: 15,
-      iac4Plus: 17,
-      suppressed: 24,
-      unsuppressed: 8,
-      drReferred: 3,
-    },
-  ]
+  const [data, setData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  const { queryString } = useDashboardFilters()
+  useEffect(() => {
+    let isMounted = true
+    fetch(`/api/analytics/hlv-iac${queryString}`, { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setData(json.data ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [queryString])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No HLV & IAC data</p></CardContent></Card>
 
   return (
     <Card>

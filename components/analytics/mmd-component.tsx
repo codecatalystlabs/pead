@@ -1,14 +1,27 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
+type Row = { period: string; number: number; percentage: number }
+
 export function MMDComponent() {
-  const mmdData = [
-    { period: "3 Months", number: 1245, percentage: 43.7 },
-    { period: "6 Months", number: 892, percentage: 31.3 },
-  ]
+  const [mmdData, setMmdData] = useState<Row[]>([])
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+    fetch("/api/analytics/dsd-mmd", { credentials: "include" })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((json) => { if (!isMounted) return; setMmdData(json.mmdData ?? []) })
+      .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
+    return () => { isMounted = false }
+  }, [])
+
+  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
+  if (!mmdData.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No MMD data</p></CardContent></Card>
 
   return (
     <Card>
