@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
 const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
@@ -55,5 +58,5 @@ export async function GET(req: Request) {
     { service: "Peer Support/Teen Club", enrolled: s(agg._sum.M_1_3_Number_enrolled_in_peer), total: s(agg._sum.M_1_3_Number_enrolled_in_peer) },
   ]
 
-  return NextResponse.json({ mmdData, dsdData, supportData })
+  return NextResponse.json({ mmdData, dsdData, supportData }, { headers: NO_STORE })
 }

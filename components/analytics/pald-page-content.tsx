@@ -8,6 +8,7 @@ import { PALDTransitionDetails } from "./pald-transition-details"
 import { WeightBandDistribution } from "./weight-band-distribution"
 import { DashboardNav } from "./dashboard-nav"
 import { DashboardFilterBar } from "./dashboard-filter-bar"
+import { PALDDataContext } from "./pald-data-context"
 
 export default function PALDPageContent() {
   return (
@@ -34,6 +35,8 @@ export default function PALDPageContent() {
       <DashboardNav />
 
       <DashboardFilterBar />
+
+      <PALDDataContext />
 
       <SummaryCards />
 

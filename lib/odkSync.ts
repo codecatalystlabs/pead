@@ -288,6 +288,14 @@ H_INT_FIELDS.forEach((f) => SUBMISSION_INT_FIELDS.add(f))
 function toInt(v: unknown): number | null {
   if (v == null) return null
   if (typeof v === "number" && !Number.isNaN(v)) return Math.round(v)
+  if (Array.isArray(v)) {
+    let sum = 0
+    for (const item of v) {
+      const n = toInt(item)
+      if (n !== null) sum += n
+    }
+    return sum > 0 || v.length === 0 ? sum : null
+  }
   const n = parseInt(String(v), 10)
   return Number.isNaN(n) ? null : n
 }
@@ -304,6 +312,52 @@ function toStringOrNull(v: unknown): string | null {
   return String(v)
 }
 
+/** Flatten nested object so nested keys are findable (ODK can return groups as nested objects or arrays). */
+function flattenForLookup(obj: unknown, prefix = ""): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  if (obj == null || typeof obj !== "object") return out
+  if (Array.isArray(obj)) {
+    obj.forEach((item, i) => {
+      Object.assign(out, flattenForLookup(item, `${prefix}.${i}`))
+    })
+    return out
+  }
+  const rec = obj as Record<string, unknown>
+  for (const [k, v] of Object.entries(rec)) {
+    const key = prefix ? `${prefix}.${k}` : k
+    if (v != null && typeof v === "object" && !Array.isArray(v) && !(v instanceof Date)) {
+      Object.assign(out, flattenForLookup(v, key))
+    } else {
+      out[key] = v
+    }
+  }
+  return out
+}
+
+/** Get value from flattened map: exact key or first key ending with .key (for nested ODK groups). */
+function getFromFlattened(flat: Record<string, unknown>, key: string): unknown {
+  if (flat[key] !== undefined) return flat[key]
+  const suffix = `.${key}`
+  for (const [k, v] of Object.entries(flat)) {
+    if (k.endsWith(suffix)) return v
+  }
+  return undefined
+}
+
+/** For numeric fields: sum all values whose key ends with .key (repeat groups). Single value = that value. */
+function getFromFlattenedSum(flat: Record<string, unknown>, key: string): unknown {
+  const exact = flat[key]
+  const suffix = `.${key}`
+  const matches: unknown[] = []
+  if (exact !== undefined) matches.push(exact)
+  for (const [k, v] of Object.entries(flat)) {
+    if (k !== key && k.endsWith(suffix)) matches.push(v)
+  }
+  if (matches.length === 0) return undefined
+  if (matches.length === 1) return matches[0]
+  return matches
+}
+
 /** Build create/update payload from SVC submission: id, data, submissionDate, region, district, facility + all typed columns. */
 function buildSubmissionPayload(
   id: string,
@@ -313,6 +367,8 @@ function buildSubmissionPayload(
   district: string | null,
   facility: string | null
 ): Record<string, unknown> {
+  const flat = flattenForLookup(sub)
+
   const payload: Record<string, unknown> = {
     id,
     data: sub,
@@ -330,7 +386,9 @@ function buildSubmissionPayload(
 
   for (const key of allTypedKeys) {
     if (key === "submissionDate" || key === "region" || key === "district" || key === "facility") continue
-    const raw = sub[key] ?? (key === "submissionDate" ? sub.__system?.submissionDate : undefined)
+    const raw =
+      getFromFlattened(flat, key) ??
+      (key === "submissionDate" ? sub.__system?.submissionDate : undefined)
     if (raw === undefined && key !== "A_6_Date_of_submission_yyyy_mm_dd") continue
     if (SUBMISSION_DATE_FIELDS.has(key)) {
       const d = key === "submissionDate" ? submissionDate : toDate(raw)
@@ -406,14 +464,22 @@ export async function syncOdkToDatabase() {
         maxSubmissionDate = submissionDate
       }
 
-      const region = (sub["A_3_Region"] as string | undefined) ?? null
-      const district =
-        (sub["A_4_1_District_Central_Region"] as string | undefined) ??
-        (sub["A_4_2_District_Eastern_Region"] as string | undefined) ??
-        (sub["A_4_3_District_Northern_Region"] as string | undefined) ??
-        (sub["A_4_4_District_Western_Region"] as string | undefined) ??
+      const flatSub = flattenForLookup(sub)
+      const region =
+        (getFromFlattened(flatSub, "A_3_Region") as string | undefined) ??
+        (getFromFlattened(flatSub, "region") as string | undefined) ??
         null
-      const facility = (sub["A_2_Name_of_reporting_unit"] as string | undefined) ?? null
+      const district =
+        (getFromFlattened(flatSub, "A_4_1_District_Central_Region") as string | undefined) ??
+        (getFromFlattened(flatSub, "A_4_2_District_Eastern_Region") as string | undefined) ??
+        (getFromFlattened(flatSub, "A_4_3_District_Northern_Region") as string | undefined) ??
+        (getFromFlattened(flatSub, "A_4_4_District_Western_Region") as string | undefined) ??
+        (getFromFlattened(flatSub, "district") as string | undefined) ??
+        null
+      const facility =
+        (getFromFlattened(flatSub, "A_2_Name_of_reporting_unit") as string | undefined) ??
+        (getFromFlattened(flatSub, "facility") as string | undefined) ??
+        null
 
       const payload = buildSubmissionPayload(id, sub, submissionDate, region, district, facility)
 

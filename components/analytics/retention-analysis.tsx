@@ -13,7 +13,7 @@ export function RetentionAnalysis() {
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/capacity", { credentials: "include" })
+    fetch("/api/analytics/capacity", { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setData(json.retentionData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))

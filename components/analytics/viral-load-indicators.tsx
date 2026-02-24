@@ -13,7 +13,7 @@ export function ViralLoadIndicators() {
   const { queryString } = useDashboardFilters()
   useEffect(() => {
     let isMounted = true
-    fetch(`/api/analytics/viral-load${queryString}`, { credentials: "include" })
+    fetch(`/api/analytics/viral-load${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => {
         if (!isMounted) return

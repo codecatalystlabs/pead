@@ -15,35 +15,57 @@ export interface FilterParams {
   dateTo?: string | null
 }
 
+function trimParam(v: string | null): string | undefined {
+  if (v == null || v === "") return undefined
+  const t = v.trim()
+  return t === "" ? undefined : t
+}
+
 export function parseFilterParams(url: string): FilterParams {
   const u = new URL(url, "http://localhost")
   return {
-    region: u.searchParams.get("region") || undefined,
-    district: u.searchParams.get("district") || undefined,
-    facility: u.searchParams.get("facility") || undefined,
-    reportingPeriod: u.searchParams.get("reportingPeriod") || undefined,
-    dateFrom: u.searchParams.get("dateFrom") || undefined,
-    dateTo: u.searchParams.get("dateTo") || undefined,
+    region: trimParam(u.searchParams.get("region")),
+    district: trimParam(u.searchParams.get("district")),
+    facility: trimParam(u.searchParams.get("facility")),
+    reportingPeriod: trimParam(u.searchParams.get("reportingPeriod")),
+    dateFrom: trimParam(u.searchParams.get("dateFrom")),
+    dateTo: trimParam(u.searchParams.get("dateTo")),
   }
+}
+
+/** String filter: case-insensitive match so "Central" matches "central" in DB. */
+function stringFilter(value: string): { equals: string; mode: "insensitive" } {
+  return { equals: value.trim(), mode: "insensitive" }
+}
+
+function toDateSafe(value: string | undefined | null): Date | null {
+  if (value == null || typeof value !== "string") return null
+  const d = new Date(value.trim())
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+function endOfDay(date: Date): Date {
+  const d = new Date(date.getTime())
+  d.setHours(23, 59, 59, 999)
+  return d
 }
 
 export function buildWhereWithFilters(auth: AuthClaims | null, url: string): WhereSubmission {
   const where = buildSubmissionWhere(auth) as Record<string, unknown>
   const params = parseFilterParams(url)
 
-  if (params.region) where.region = params.region
-  if (params.district) where.district = params.district
-  if (params.facility) where.facility = params.facility
-  if (params.reportingPeriod) where.A_5_Reporting_period_quarter = params.reportingPeriod
+  if (params.region) where.region = stringFilter(params.region)
+  if (params.district) where.district = stringFilter(params.district)
+  if (params.facility) where.facility = stringFilter(params.facility)
+  if (params.reportingPeriod)
+    (where as Record<string, unknown>).A_5_Reporting_period_quarter = stringFilter(params.reportingPeriod)
 
-  if (params.dateFrom || params.dateTo) {
+  const dateFrom = toDateSafe(params.dateFrom ?? null)
+  const dateTo = toDateSafe(params.dateTo ?? null)
+  if (dateFrom != null || dateTo != null) {
     where.submissionDate = {}
-    if (params.dateFrom) (where.submissionDate as Record<string, unknown>).gte = new Date(params.dateFrom)
-    if (params.dateTo) {
-      const d = new Date(params.dateTo)
-      d.setHours(23, 59, 59, 999)
-      (where.submissionDate as Record<string, unknown>).lte = d
-    }
+    if (dateFrom) (where.submissionDate as Record<string, unknown>).gte = dateFrom
+    if (dateTo) (where.submissionDate as Record<string, unknown>).lte = endOfDay(dateTo)
   }
 
   return where

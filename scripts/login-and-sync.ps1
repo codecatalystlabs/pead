@@ -5,7 +5,7 @@
 
 param(
     [string]$Email = "pwaiswa@gmail.com",
-    [string]$Password = "",
+    [string]$Password = "leaves",
     [switch]$SyncOnly,
     [string]$Token = "",
     [string]$BaseUrl = "http://localhost:3000"

@@ -21,7 +21,7 @@ export function CareModelDistribution() {
   const { queryString } = useDashboardFilters()
   useEffect(() => {
     let isMounted = true
-    fetch(`/api/analytics/pald${queryString}`, { credentials: "include" })
+    fetch(`/api/analytics/pald${queryString}`, { credentials: "include", cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
       .then((json) => {
         if (isMounted && Array.isArray(json.careModelData)) setData(json.careModelData)
@@ -38,7 +38,7 @@ export function CareModelDistribution() {
     <Card>
       <CardHeader>
         <CardTitle>Care Model Distribution</CardTitle>
-        <CardDescription>Distribution of CALHIV across care models (numerator / denominator)</CardDescription>
+        <CardDescription>Share of patients in each care model at the facility. Not the same as Total CALHIV in care.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

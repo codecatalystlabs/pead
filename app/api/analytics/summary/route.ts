@@ -3,13 +3,36 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
+const EMPTY_SUMMARY = {
+  totalCalhiv: 0,
+  careIntegrationRate: 0,
+  paldTransitionRate: 0,
+  staffTrainingCoverage: 0,
+  vlSuppressionRate: 0,
+  vlSuppressed: 0,
+  totalVlEligible: 0,
+  paldEligible: 0,
+  paldOnPald: 0,
+  trainedHw: 0,
+  totalHw: 0,
+  submissionCount: 0,
+  noData: true,
+  message: "No data for the selected filters or period.",
+}
+
 export async function GET(req: Request) {
   const auth = getAuthFromRequest(req)
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  // Basic aggregates – you can refine formulas as needed
-  const [
+  try {
+    const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
+
+    // Basic aggregates – you can refine formulas as needed
+    const [
     totalCalhivAgg,
     vlSuppressedAgg,
     totalVlEligibleAgg,
@@ -17,6 +40,7 @@ export async function GET(req: Request) {
     paldOnPaldAgg,
     trainedHwAgg,
     totalHwAgg,
+    countResult,
   ] = await Promise.all([
     prisma.submission.aggregate({
       where,
@@ -58,6 +82,7 @@ export async function GET(req: Request) {
       where,
       _sum: { total_number_hw_at_site: true },
     }),
+    prisma.submission.aggregate({ where, _count: { id: true } }),
   ])
 
   const totalCalhiv = totalCalhivAgg._sum.total_calhiv_at_hf ?? 0
@@ -81,26 +106,37 @@ export async function GET(req: Request) {
   const trainedHw = trainedHwAgg._sum.number_hw_trained_integra ?? 0
   const totalHw = totalHwAgg._sum.total_number_hw_at_site ?? 0
 
-  const careIntegrationRate = totalCalhiv > 0 ? (paldEligible / totalCalhiv) * 100 : 0
-  const paldTransitionRate = paldEligible > 0 ? (paldOnPald / paldEligible) * 100 : 0
-  const staffTrainingCoverage = totalHw > 0 ? (trainedHw / totalHw) * 100 : 0
-  const vlSuppressionRate = totalVlEligible > 0 ? (vlSuppressed / totalVlEligible) * 100 : 0
+  // Care Integration = % of all CALHIV who are already on pALD (integrated into pALD care)
+  const careIntegrationRate = Math.min(100, totalCalhiv > 0 ? (paldOnPald / totalCalhiv) * 100 : 0)
+  // pALD Transition Rate = of those eligible for pALD, % who have transitioned
+  const paldTransitionRate = Math.min(100, paldEligible > 0 ? (paldOnPald / paldEligible) * 100 : 0)
+  const staffTrainingCoverage = Math.min(100, totalHw > 0 ? (trainedHw / totalHw) * 100 : 0)
+  const vlSuppressionRate = Math.min(100, totalVlEligible > 0 ? (vlSuppressed / totalVlEligible) * 100 : 0)
+
+  const submissionCount = countResult._count.id ?? 0
 
   return NextResponse.json(
-    {
-      totalCalhiv,
-      careIntegrationRate,
-      paldTransitionRate,
-      staffTrainingCoverage,
-      vlSuppressionRate,
-      vlSuppressed,
-      totalVlEligible,
-      paldEligible,
-      paldOnPald,
-      trainedHw,
-      totalHw,
-    },
-    { status: 200 },
-  )
+      {
+        totalCalhiv,
+        careIntegrationRate,
+        paldTransitionRate,
+        staffTrainingCoverage,
+        vlSuppressionRate,
+        vlSuppressed,
+        totalVlEligible,
+        paldEligible,
+        paldOnPald,
+        trainedHw,
+        totalHw,
+        submissionCount,
+      },
+      { status: 200, headers: NO_STORE },
+    )
+  } catch {
+    return NextResponse.json(
+      { ...EMPTY_SUMMARY },
+      { status: 200, headers: NO_STORE },
+    )
+  }
 }
 

@@ -28,7 +28,7 @@ export function DashboardFilterBar() {
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/filter-options", { credentials: "include" })
+    fetch("/api/analytics/filter-options", { credentials: "include", cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
         if (!isMounted) return

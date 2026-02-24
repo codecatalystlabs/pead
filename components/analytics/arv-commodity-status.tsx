@@ -13,7 +13,7 @@ export function ARVCommodityStatus() {
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/commodities", { credentials: "include" })
+    fetch("/api/analytics/commodities", { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setData(json.data ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))

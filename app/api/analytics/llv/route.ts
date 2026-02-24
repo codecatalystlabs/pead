@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
 const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
@@ -31,5 +34,5 @@ export async function GET(req: Request) {
     { ageGroup: "15 - 19 years", llv: s(l4._sum.L_4_1_No_of_CALHIV_llv), suppressed: s(l4._sum.L_4_7_No_who_achieved_supp), stillLLVorHLV: s(l4._sum.L_4_9_Number_still_w_h_low_level_viraemia) },
   ]
 
-  return NextResponse.json({ data })
+  return NextResponse.json({ data }, { headers: NO_STORE })
 }

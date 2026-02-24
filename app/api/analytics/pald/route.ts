@@ -3,13 +3,43 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
+const EMPTY_PALD_RESPONSE = {
+  weightBandData: [],
+  weightBandDataForTransition: [],
+  ageBandData: [],
+  careModelData: [
+    { name: "Mixed OPD", value: 0, patients: 0 },
+    { name: "Chronic Care/Clinic Day", value: 0, patients: 0 },
+    { name: "Other Models", value: 0, patients: 0 },
+  ],
+  transitionTrendsData: [{ month: "—", pALD: 0, nonPALD: 0 }],
+  totalCalhiv: 0,
+  paldOnPald: 0,
+  submissionCount: 0,
+  noData: true,
+  message: "No data for the selected filters or period.",
+}
+
 export async function GET(req: Request) {
   const auth = getAuthFromRequest(req)
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
+  try {
+    const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  const [weightSums, ageEligibleSums, ageTransitionedSums, careModelSums, submissionsForTrends] = await Promise.all([
+    const [
+    weightSums,
+    ageEligibleSums,
+    ageTransitionedSums,
+    careModelSums,
+    submissionsForTrends,
+    totalCalhivAgg,
+    paldOnPaldAgg,
+    countAgg,
+  ] = await Promise.all([
     prisma.submission.aggregate({
       where,
       _sum: {
@@ -91,6 +121,18 @@ export async function GET(req: Request) {
         C_1_7_How_many_ALHIV_non_pALD_formulation: true,
       },
     }),
+    prisma.submission.aggregate({ where, _sum: { total_calhiv_at_hf: true } }),
+    prisma.submission.aggregate({
+      where,
+      _sum: {
+        pald_3_5_9_kg: true,
+        pald_6_9_9_kg: true,
+        pald_10_13_9_kg: true,
+        pald_14_19_9_kg: true,
+        pald_20_24_9_kg: true,
+      },
+    }),
+    prisma.submission.aggregate({ where, _count: { id: true } }),
   ])
 
   const s = (v: number | null | undefined) => v ?? 0
@@ -181,11 +223,32 @@ export async function GET(req: Request) {
     .filter((r) => r.eligible > 0 || r.transitioned > 0)
     .map(({ band, eligible, transitioned, pct }) => ({ band, eligible, transitioned, pct }))
 
-  return NextResponse.json({
-    weightBandData,
-    weightBandDataForTransition,
-    ageBandData,
-    careModelData,
-    transitionTrendsData,
-  })
+  const totalCalhiv = totalCalhivAgg._sum.total_calhiv_at_hf ?? 0
+  const paldOnPald =
+    (paldOnPaldAgg._sum.pald_3_5_9_kg ?? 0) +
+    (paldOnPaldAgg._sum.pald_6_9_9_kg ?? 0) +
+    (paldOnPaldAgg._sum.pald_10_13_9_kg ?? 0) +
+    (paldOnPaldAgg._sum.pald_14_19_9_kg ?? 0) +
+    (paldOnPaldAgg._sum.pald_20_24_9_kg ?? 0)
+  const submissionCount = countAgg._count.id ?? 0
+
+  return NextResponse.json(
+      {
+        weightBandData,
+        weightBandDataForTransition,
+        ageBandData,
+        careModelData,
+        transitionTrendsData,
+        totalCalhiv,
+        paldOnPald,
+        submissionCount,
+      },
+      { headers: NO_STORE },
+    )
+  } catch {
+    return NextResponse.json(
+      { ...EMPTY_PALD_RESPONSE },
+      { status: 200, headers: NO_STORE },
+    )
+  }
 }

@@ -18,7 +18,7 @@ export function PALDTransitionDetails() {
   const { queryString } = useDashboardFilters()
   useEffect(() => {
     let isMounted = true
-    fetch(`/api/analytics/pald${queryString}`, { credentials: "include" })
+    fetch(`/api/analytics/pald${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => {
         if (!isMounted) return

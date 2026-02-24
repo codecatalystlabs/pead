@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
 const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
@@ -32,10 +35,13 @@ export async function GET(req: Request) {
     suppressedPct: r.updated > 0 ? Math.round((r.suppressed / r.updated) * 1000) / 10 : 0,
   }))
 
-  return NextResponse.json({
-    data,
-    totalUpdated,
-    totalSuppressed,
-    vlSuppressionRate,
-  })
+  return NextResponse.json(
+    {
+      data,
+      totalUpdated,
+      totalSuppressed,
+      vlSuppressionRate,
+    },
+    { headers: NO_STORE },
+  )
 }

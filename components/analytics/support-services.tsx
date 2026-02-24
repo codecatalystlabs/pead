@@ -13,7 +13,7 @@ export function SupportServices() {
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/dsd-mmd", { credentials: "include" })
+    fetch("/api/analytics/dsd-mmd", { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setSupportData(json.supportData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))

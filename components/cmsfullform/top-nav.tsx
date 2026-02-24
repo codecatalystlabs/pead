@@ -127,7 +127,19 @@ export default function TopNav() {
               Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600">Sign out</DropdownMenuItem>
+            <DropdownMenuItem
+              className="text-red-600 cursor-pointer"
+              onSelect={async (e) => {
+                e.preventDefault()
+                try {
+                  await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+                } finally {
+                  window.location.href = "/auth/login"
+                }
+              }}
+            >
+              Sign out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

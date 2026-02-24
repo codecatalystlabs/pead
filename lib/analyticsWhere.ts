@@ -2,15 +2,19 @@ import type { AuthClaims } from "./auth"
 
 export type WhereSubmission = Record<string, unknown>
 
+function stringEquals(value: string): { equals: string; mode: "insensitive" } {
+  return { equals: value.trim(), mode: "insensitive" }
+}
+
 export function buildSubmissionWhere(auth: AuthClaims | null): WhereSubmission {
   if (!auth) return {}
   const where: WhereSubmission = {}
   if (auth.jurisdictionLevel === "REGIONAL" && auth.region) {
-    where.region = auth.region
+    where.region = stringEquals(auth.region)
   } else if (auth.jurisdictionLevel === "DISTRICT" && auth.district) {
-    where.district = auth.district
+    where.district = stringEquals(auth.district)
   } else if (auth.jurisdictionLevel === "FACILITY" && auth.facility) {
-    where.facility = auth.facility
+    where.facility = stringEquals(auth.facility)
   }
   return where
 }

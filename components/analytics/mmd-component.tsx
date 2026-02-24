@@ -13,7 +13,7 @@ export function MMDComponent() {
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/dsd-mmd", { credentials: "include" })
+    fetch("/api/analytics/dsd-mmd", { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setMmdData(json.mmdData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))

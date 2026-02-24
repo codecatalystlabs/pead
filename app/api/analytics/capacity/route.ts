@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
 const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
@@ -35,5 +38,5 @@ export async function GET(req: Request) {
     { cohort: "Kept appointments", active: keptAppointments, ltfu: 0, dead: 0, transferredOut: 0, transferredIn: 0 },
   ]
 
-  return NextResponse.json({ data, retentionData })
+  return NextResponse.json({ data, retentionData }, { headers: NO_STORE })
 }

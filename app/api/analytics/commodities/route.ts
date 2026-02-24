@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
 
+export const dynamic = "force-dynamic"
+const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
+
 const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
@@ -30,5 +33,5 @@ export async function GET(req: Request) {
     { commodity: "Darunavir (DRV)", mos: 0, optimal: 3, status: "critical" as const },
   ]
 
-  return NextResponse.json({ data })
+  return NextResponse.json({ data }, { headers: NO_STORE })
 }

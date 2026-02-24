@@ -18,18 +18,21 @@ interface SummaryMetric {
 export function SummaryCards() {
   const { queryString } = useDashboardFilters()
   const [metrics, setMetrics] = useState<SummaryMetric[] | null>(null)
+  const [submissionCount, setSubmissionCount] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
     ;(async () => {
       try {
-        const res = await fetch(`/api/analytics/summary${queryString}`, { credentials: "include" })
+        const res = await fetch(`/api/analytics/summary${queryString}`, { credentials: "include", cache: "no-store" })
         if (!res.ok) {
           throw new Error(`Failed to load summary (${res.status})`)
         }
         const data = await res.json()
         if (!isMounted) return
+
+        setSubmissionCount(data.submissionCount ?? null)
 
         const items: SummaryMetric[] = [
           {
@@ -39,10 +42,10 @@ export function SummaryCards() {
             tooltip: data.totalCalhiv != null ? `Total: ${Number(data.totalCalhiv).toLocaleString()} patients` : undefined,
           },
           {
-            title: "Care Integration (pALD Eligible / Total CALHIV)",
+            title: "Care Integration (on pALD / Total CALHIV)",
             value: `${data.careIntegrationRate?.toFixed?.(1) ?? "0.0"}%`,
-            description: "Proportion of CALHIV eligible for pALD",
-            tooltip: data.paldEligible != null && data.totalCalhiv != null ? `Eligible: ${Number(data.paldEligible).toLocaleString()} / Total: ${Number(data.totalCalhiv).toLocaleString()} (${(data.careIntegrationRate ?? 0).toFixed(1)}%)` : undefined,
+            description: "Proportion of CALHIV who have transitioned to pALD",
+            tooltip: data.paldOnPald != null && data.totalCalhiv != null ? `On pALD: ${Number(data.paldOnPald).toLocaleString()} / Total: ${Number(data.totalCalhiv).toLocaleString()} (${(data.careIntegrationRate ?? 0).toFixed(1)}%)` : undefined,
           },
           {
             title: "pALD Transition Rate",
@@ -101,7 +104,8 @@ export function SummaryCards() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {metrics.map((metric, index) => (
         <Card key={index} className="hover:shadow-lg transition-shadow">
           <CardHeader className="pb-3">
@@ -125,6 +129,12 @@ export function SummaryCards() {
           </CardContent>
         </Card>
       ))}
+      </div>
+      {submissionCount != null && (
+        <p className="text-xs text-muted-foreground mt-3">
+          Based on {submissionCount} submission{submissionCount !== 1 ? "s" : ""}
+        </p>
+      )}
     </div>
   )
 }
