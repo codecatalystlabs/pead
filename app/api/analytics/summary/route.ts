@@ -11,6 +11,7 @@ const EMPTY_SUMMARY = {
   totalCalhiv: 0,
   careIntegrationRate: 0,
   paldTransitionRate: 0,
+  paldTransitionNumerator: 0,
   staffTrainingCoverage: 0,
   vlSuppressionRate: 0,
   vlSuppressed: 0,
@@ -20,6 +21,7 @@ const EMPTY_SUMMARY = {
   trainedHw: 0,
   totalHw: 0,
   submissionCount: 0,
+  dataQualityWarnings: [],
   noData: true,
   message: "No data for the selected filters or period.",
 }
@@ -109,17 +111,25 @@ export async function GET(req: Request) {
   // Care Integration = % of all CALHIV who are already on pALD (integrated into pALD care)
   const careIntegrationRate = Math.min(100, totalCalhiv > 0 ? (paldOnPald / totalCalhiv) * 100 : 0)
   // pALD Transition Rate = of those eligible for pALD, % who have transitioned
-  const paldTransitionRate = Math.min(100, paldEligible > 0 ? (paldOnPald / paldEligible) * 100 : 0)
+  const paldTransitionNumerator = Math.min(paldOnPald, paldEligible)
+  const paldTransitionRate = Math.min(100, paldEligible > 0 ? (paldTransitionNumerator / paldEligible) * 100 : 0)
   const staffTrainingCoverage = Math.min(100, totalHw > 0 ? (trainedHw / totalHw) * 100 : 0)
   const vlSuppressionRate = Math.min(100, totalVlEligible > 0 ? (vlSuppressed / totalVlEligible) * 100 : 0)
 
   const submissionCount = countResult._count.id ?? 0
+  const dataQualityWarnings: string[] = []
+  if (paldOnPald > paldEligible) {
+    dataQualityWarnings.push(
+      `Reported on pALD (${paldOnPald.toLocaleString()}) exceeds pALD-eligible counts (${paldEligible.toLocaleString()}); the displayed transition rate is capped at the eligible total.`,
+    )
+  }
 
   return NextResponse.json(
       {
         totalCalhiv,
         careIntegrationRate,
         paldTransitionRate,
+        paldTransitionNumerator,
         staffTrainingCoverage,
         vlSuppressionRate,
         vlSuppressed,
@@ -129,6 +139,7 @@ export async function GET(req: Request) {
         trainedHw,
         totalHw,
         submissionCount,
+        dataQualityWarnings,
       },
       { status: 200, headers: NO_STORE },
     )

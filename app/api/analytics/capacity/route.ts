@@ -13,7 +13,7 @@ export async function GET(req: Request) {
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  const [capacity, retention] = await Promise.all([
+  const [capacity, retention, supervisionRows] = await Promise.all([
     prisma.submission.aggregate({
       where,
       _sum: { total_number_hw_at_site: true, number_hw_trained_integra: true, no_hf_staff_eligible_pald: true, number_hf_staff_oriented_pald: true },
@@ -21,6 +21,10 @@ export async function GET(req: Request) {
     prisma.submission.aggregate({
       where,
       _sum: { I_1_How_many_CALHIV_or_review_last_month: true, I_1_1_Of_those_who_w_r_their_appointments: true },
+    }),
+    prisma.submission.findMany({
+      where,
+      select: { F_1_5_Have_you_had_support_sup: true },
     }),
   ])
 
@@ -38,5 +42,24 @@ export async function GET(req: Request) {
     { cohort: "Kept appointments", active: keptAppointments, ltfu: 0, dead: 0, transferredOut: 0, transferredIn: 0 },
   ]
 
-  return NextResponse.json({ data, retentionData }, { headers: NO_STORE })
+  const supportSupervision = supervisionRows.reduce((acc, row) => {
+    return typeof row.F_1_5_Have_you_had_support_sup === "string" && row.F_1_5_Have_you_had_support_sup.toLowerCase().includes("yes")
+      ? acc + 1
+      : acc
+  }, 0)
+  const mentorships = s(capacity._sum.number_hf_staff_oriented_pald)
+  const trainings = trained
+
+  return NextResponse.json(
+    {
+      data,
+      retentionData,
+      capacityBuilding: [
+        { item: "Trainings", value: trainings },
+        { item: "Mentorships", value: mentorships },
+        { item: "Support supervision", value: supportSupervision },
+      ],
+    },
+    { headers: NO_STORE },
+  )
 }

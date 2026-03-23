@@ -8,18 +8,22 @@ export interface DashboardFilters {
   region: string
   district: string
   facility: string
+  ageBand: string
   reportingPeriod: string
   dateFrom: string
   dateTo: string
+  metricView: "percentage" | "absolute"
 }
 
 const defaultFilters: DashboardFilters = {
   region: "",
   district: "",
   facility: "",
+  ageBand: "",
   reportingPeriod: "",
   dateFrom: "",
   dateTo: "",
+  metricView: "percentage",
 }
 
 function loadStored(): DashboardFilters {
@@ -78,9 +82,11 @@ export function DashboardFilterProvider({ children }: { children: React.ReactNod
     if (filters.region) p.set("region", filters.region)
     if (filters.district) p.set("district", filters.district)
     if (filters.facility) p.set("facility", filters.facility)
+    if (filters.ageBand) p.set("ageBand", filters.ageBand)
     if (filters.reportingPeriod) p.set("reportingPeriod", filters.reportingPeriod)
     if (filters.dateFrom) p.set("dateFrom", filters.dateFrom)
     if (filters.dateTo) p.set("dateTo", filters.dateTo)
+    if (filters.metricView) p.set("metricView", filters.metricView)
     const s = p.toString()
     return s ? `?${s}` : ""
   }, [filters])

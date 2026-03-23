@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
-import { buildWhereWithFilters } from "@/lib/analyticsFilters"
+import { buildWhereWithFilters, parseFilterParams } from "@/lib/analyticsFilters"
+import { filterRowsByAgeBand } from "@/lib/ageBand"
 
 export const dynamic = "force-dynamic"
 const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
@@ -72,12 +73,13 @@ export async function GET(req: Request) {
     }),
   ])
 
-  const data = [
-    { ageGroup: "0 - 4 years", hlv: s(k1._sum.K_1_1_No_clhiv_hlv_0_4), iac0: 0, iac1: 0, iac2: 0, iac3: s(k1._sum.K_1_5_No_comp_3iac_0_4), iac4Plus: s(k1._sum.K_1_6_No_comp_4iac_0_4), suppressed: s(k1._sum.K_1_8_No_viral_supp_3iac_0_4), unsuppressed: s(k1._sum.K_1_10_Number_still_high_level_viraemia), drReferred: s(k1._sum.K_1_11_Number_referr_high_level_viraemia) },
-    { ageGroup: "5 - 9 years", hlv: s(k2._sum.K_2_1_No_CALHIV_with_hlv), iac0: 0, iac1: 0, iac2: 0, iac3: s(k2._sum.K_2_5_No_completed_3_iac_5_9), iac4Plus: s(k2._sum.K_2_6_No_completed_4_iac_5_9), suppressed: s(k2._sum.K_2_8_Number_who_ach_high_level_viraemia), unsuppressed: s(k2._sum.K_2_10_Number_still_high_level_viraemia), drReferred: s(k2._sum.K_2_11_Number_referr_high_level_viraemia) },
-    { ageGroup: "10 - 14 years", hlv: s(k3._sum.K_3_1_No_of_CLHIV_hlv), iac0: 0, iac1: 0, iac2: 0, iac3: s(k3._sum.K_3_5_No_completed_3_iac_10_14), iac4Plus: s(k3._sum.K_3_6_No_completed_4_iac_10_14), suppressed: s(k3._sum.K_3_8_No_achieved_supp_3_more), unsuppressed: s(k3._sum.K_3_10_Number_still_high_level_viraemia), drReferred: s(k3._sum.K_3_11_Number_referr_high_level_viraemia) },
-    { ageGroup: "15 - 19 years", hlv: s(k4._sum.K_4_1_No_of_CALHIV_hlv), iac0: 0, iac1: 0, iac2: 0, iac3: s(k4._sum.K_4_5_No_completed_3_iac), iac4Plus: s(k4._sum.K_4_6_No_completed_4_iac), suppressed: s(k4._sum.K_4_8_No_achieved_supp), unsuppressed: s(k4._sum.K_4_10_Number_still_high_level_viraemia), drReferred: s(k4._sum.K_4_11_Number_referr_high_level_viraemia) },
-  ]
+  const params = parseFilterParams(req.url)
+  const data = filterRowsByAgeBand([
+    { ageGroup: "0 - 4 years", hlv: s(k1._sum.K_1_1_No_clhiv_hlv_0_4), iac1: s(k1._sum.K_1_2_Number_who_com_high_level_viraemia), iac2: s(k1._sum.K_1_3_Number_who_com_high_level_viraemia), iac3: s(k1._sum.K_1_5_No_comp_3iac_0_4), iac4Plus: s(k1._sum.K_1_6_No_comp_4iac_0_4), suppressed: s(k1._sum.K_1_8_No_viral_supp_3iac_0_4), unsuppressed: s(k1._sum.K_1_10_Number_still_high_level_viraemia), drReferred: s(k1._sum.K_1_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k1._sum.K_1_4_Number_who_com_high_level_viraemia), below1000: s(k1._sum.K_1_8_No_viral_supp_3iac_0_4), aboveOrEq1000: s(k1._sum.K_1_10_Number_still_high_level_viraemia) },
+    { ageGroup: "5 - 9 years", hlv: s(k2._sum.K_2_1_No_CALHIV_with_hlv), iac1: s(k2._sum.K_2_2_Number_who_com_high_level_viraemia), iac2: s(k2._sum.K_2_3_Number_who_com_high_level_viraemia), iac3: s(k2._sum.K_2_5_No_completed_3_iac_5_9), iac4Plus: s(k2._sum.K_2_6_No_completed_4_iac_5_9), suppressed: s(k2._sum.K_2_8_Number_who_ach_high_level_viraemia), unsuppressed: s(k2._sum.K_2_10_Number_still_high_level_viraemia), drReferred: s(k2._sum.K_2_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k2._sum.K_2_4_Number_who_com_high_level_viraemia), below1000: s(k2._sum.K_2_8_Number_who_ach_high_level_viraemia), aboveOrEq1000: s(k2._sum.K_2_10_Number_still_high_level_viraemia) },
+    { ageGroup: "10 - 14 years", hlv: s(k3._sum.K_3_1_No_of_CLHIV_hlv), iac1: s(k3._sum.K_3_2_Number_who_com_high_level_viraemia), iac2: s(k3._sum.K_3_3_Number_who_com_high_level_viraemia), iac3: s(k3._sum.K_3_5_No_completed_3_iac_10_14), iac4Plus: s(k3._sum.K_3_6_No_completed_4_iac_10_14), suppressed: s(k3._sum.K_3_8_No_achieved_supp_3_more), unsuppressed: s(k3._sum.K_3_10_Number_still_high_level_viraemia), drReferred: s(k3._sum.K_3_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k3._sum.K_3_4_Number_who_com_high_level_viraemia), below1000: s(k3._sum.K_3_8_No_achieved_supp_3_more), aboveOrEq1000: s(k3._sum.K_3_10_Number_still_high_level_viraemia) },
+    { ageGroup: "15 - 19 years", hlv: s(k4._sum.K_4_1_No_of_CALHIV_hlv), iac1: s(k4._sum.K_4_2_Number_who_com_high_level_viraemia), iac2: s(k4._sum.K_4_3_Number_who_com_high_level_viraemia), iac3: s(k4._sum.K_4_5_No_completed_3_iac), iac4Plus: s(k4._sum.K_4_6_No_completed_4_iac), suppressed: s(k4._sum.K_4_8_No_achieved_supp), unsuppressed: s(k4._sum.K_4_10_Number_still_high_level_viraemia), drReferred: s(k4._sum.K_4_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k4._sum.K_4_4_Number_who_com_high_level_viraemia), below1000: s(k4._sum.K_4_8_No_achieved_supp), aboveOrEq1000: s(k4._sum.K_4_10_Number_still_high_level_viraemia) },
+  ], params.ageBand)
 
   return NextResponse.json({ data }, { headers: NO_STORE })
 }

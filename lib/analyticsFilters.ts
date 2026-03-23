@@ -4,12 +4,14 @@
  */
 import type { WhereSubmission } from "./analyticsWhere"
 import { buildSubmissionWhere } from "./analyticsWhere"
+import { canApplyScopedField } from "./analyticsWhere"
 import type { AuthClaims } from "./auth"
 
 export interface FilterParams {
   region?: string | null
   district?: string | null
   facility?: string | null
+  ageBand?: string | null
   reportingPeriod?: string | null
   dateFrom?: string | null
   dateTo?: string | null
@@ -27,6 +29,7 @@ export function parseFilterParams(url: string): FilterParams {
     region: trimParam(u.searchParams.get("region")),
     district: trimParam(u.searchParams.get("district")),
     facility: trimParam(u.searchParams.get("facility")),
+    ageBand: trimParam(u.searchParams.get("ageBand")),
     reportingPeriod: trimParam(u.searchParams.get("reportingPeriod")),
     dateFrom: trimParam(u.searchParams.get("dateFrom")),
     dateTo: trimParam(u.searchParams.get("dateTo")),
@@ -54,9 +57,10 @@ export function buildWhereWithFilters(auth: AuthClaims | null, url: string): Whe
   const where = buildSubmissionWhere(auth) as Record<string, unknown>
   const params = parseFilterParams(url)
 
-  if (params.region) where.region = stringFilter(params.region)
-  if (params.district) where.district = stringFilter(params.district)
-  if (params.facility) where.facility = stringFilter(params.facility)
+  // RBAC-safe merge: scoped location keys from auth cannot be widened by query filters.
+  if (params.region && canApplyScopedField(auth, "region")) where.region = stringFilter(params.region)
+  if (params.district && canApplyScopedField(auth, "district")) where.district = stringFilter(params.district)
+  if (params.facility && canApplyScopedField(auth, "facility")) where.facility = stringFilter(params.facility)
   if (params.reportingPeriod)
     (where as Record<string, unknown>).A_5_Reporting_period_quarter = stringFilter(params.reportingPeriod)
 
@@ -76,6 +80,7 @@ export function filtersToQueryString(filters: FilterParams): string {
   if (filters.region) p.set("region", filters.region)
   if (filters.district) p.set("district", filters.district)
   if (filters.facility) p.set("facility", filters.facility)
+  if (filters.ageBand) p.set("ageBand", filters.ageBand)
   if (filters.reportingPeriod) p.set("reportingPeriod", filters.reportingPeriod)
   if (filters.dateFrom) p.set("dateFrom", filters.dateFrom)
   if (filters.dateTo) p.set("dateTo", filters.dateTo)

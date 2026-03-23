@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
-import { buildWhereWithFilters } from "@/lib/analyticsFilters"
+import { buildWhereWithFilters, parseFilterParams } from "@/lib/analyticsFilters"
+import { filterRowsByAgeBand } from "@/lib/ageBand"
 
 export const dynamic = "force-dynamic"
 const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
@@ -25,12 +26,13 @@ export async function GET(req: Request) {
   const totalSuppressed = s(j5._sum.J_5_4_Tt_no_of_CALHIV_supp)
   const vlSuppressionRate = totalUpdated > 0 ? Math.round((totalSuppressed / totalUpdated) * 1000) / 10 : 0
 
-  const data = [
+  const params = parseFilterParams(req.url)
+  const data = filterRowsByAgeBand([
     { ageGroup: "0 - 4 years", updated: s(j1._sum.J_1_3_Number_of_chil_al_Load_0_4_years), suppressed: s(j1._sum.J_1_4_Number_of_children_supp), dtgPct: 0 },
     { ageGroup: "5 - 9 years", updated: s(j2._sum.J_2_3_Number_of_chil_al_Load_5_9_years), suppressed: s(j2._sum.J_2_4_Number_child_supp_vl), dtgPct: 0 },
     { ageGroup: "10 - 14 years", updated: s(j3._sum.J_3_3_Number_of_chil_Load_10_14_years), suppressed: s(j3._sum.J_3_4_No_of_child_viral_supp), dtgPct: 0 },
     { ageGroup: "15 - 19 years", updated: s(j4._sum.J_4_3_Number_missing_Load_15_19_years) + s(j4._sum.J_4_4_No_virally_suppressed), suppressed: s(j4._sum.J_4_4_No_virally_suppressed), dtgPct: 0 },
-  ].map((r) => ({
+  ], params.ageBand).map((r) => ({
     ...r,
     suppressedPct: r.updated > 0 ? Math.round((r.suppressed / r.updated) * 1000) / 10 : 0,
   }))

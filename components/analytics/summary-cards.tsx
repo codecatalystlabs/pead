@@ -3,12 +3,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
+import { statusClassName, statusFromRate } from "@/lib/metricContract"
 
 interface SummaryMetric {
   title: string
   value: string | number
   description: string
   tooltip?: string
+  status?: "good" | "warning" | "critical" | "neutral"
   trend?: {
     value: number
     isPositive: boolean
@@ -34,6 +36,8 @@ export function SummaryCards() {
 
         setSubmissionCount(data.submissionCount ?? null)
 
+        const paldTransitionNumerator = data.paldTransitionNumerator ?? data.paldOnPald ?? 0
+
         const items: SummaryMetric[] = [
           {
             title: "Total CALHIV in Care",
@@ -46,24 +50,33 @@ export function SummaryCards() {
             value: `${data.careIntegrationRate?.toFixed?.(1) ?? "0.0"}%`,
             description: "Proportion of CALHIV who have transitioned to pALD",
             tooltip: data.paldOnPald != null && data.totalCalhiv != null ? `On pALD: ${Number(data.paldOnPald).toLocaleString()} / Total: ${Number(data.totalCalhiv).toLocaleString()} (${(data.careIntegrationRate ?? 0).toFixed(1)}%)` : undefined,
+            status: statusFromRate(data.careIntegrationRate ?? 0, { warning: 50, good: 80 }),
           },
           {
             title: "pALD Transition Rate",
             value: `${data.paldTransitionRate?.toFixed?.(1) ?? "0.0"}%`,
             description: "Eligible CALHIV who have transitioned to pALD",
-            tooltip: data.paldOnPald != null && data.paldEligible != null ? `Transitioned: ${Number(data.paldOnPald).toLocaleString()} / Eligible: ${Number(data.paldEligible).toLocaleString()} (${(data.paldTransitionRate ?? 0).toFixed(1)}%)` : undefined,
+            tooltip:
+              data.paldEligible != null
+                ? paldTransitionNumerator !== (data.paldOnPald ?? 0)
+                  ? `Counted for rate: ${Number(paldTransitionNumerator).toLocaleString()} / Eligible: ${Number(data.paldEligible).toLocaleString()} (${(data.paldTransitionRate ?? 0).toFixed(1)}%). Reported on pALD: ${Number(data.paldOnPald ?? 0).toLocaleString()}.`
+                  : `Transitioned: ${Number(paldTransitionNumerator).toLocaleString()} / Eligible: ${Number(data.paldEligible).toLocaleString()} (${(data.paldTransitionRate ?? 0).toFixed(1)}%)`
+                : undefined,
+            status: statusFromRate(data.paldTransitionRate ?? 0, { warning: 60, good: 85 }),
           },
           {
             title: "Staff Training Coverage",
             value: `${data.staffTrainingCoverage?.toFixed?.(1) ?? "0.0"}%`,
             description: "Health workers trained in integration",
             tooltip: data.trainedHw != null && data.totalHw != null ? `Trained: ${Number(data.trainedHw).toLocaleString()} / Total: ${Number(data.totalHw).toLocaleString()} (${(data.staffTrainingCoverage ?? 0).toFixed(1)}%)` : undefined,
+            status: statusFromRate(data.staffTrainingCoverage ?? 0, { warning: 60, good: 85 }),
           },
           {
             title: "Viral Load Suppression",
             value: `${data.vlSuppressionRate?.toFixed?.(1) ?? "0.0"}%`,
             description: "Clients with a suppressed viral load among those with recent VL results",
             tooltip: data.vlSuppressed != null && data.totalVlEligible != null ? `Suppressed: ${Number(data.vlSuppressed).toLocaleString()} / Eligible: ${Number(data.totalVlEligible).toLocaleString()} (${(data.vlSuppressionRate ?? 0).toFixed(1)}%)` : undefined,
+            status: statusFromRate(data.vlSuppressionRate ?? 0, { warning: 80, good: 95 }),
           },
         ]
         setMetrics(items)
@@ -107,7 +120,7 @@ export function SummaryCards() {
     <div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {metrics.map((metric, index) => (
-        <Card key={index} className="hover:shadow-lg transition-shadow">
+        <Card key={index} className={`hover:shadow-lg transition-shadow ${metric.status ? statusClassName(metric.status) : ""}`}>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">{metric.title}</CardTitle>
           </CardHeader>

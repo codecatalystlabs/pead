@@ -59,6 +59,13 @@ const sections = [
   },
 ]
 
+const nationalIndicators = [
+  { indicator: "pALD Integration", numerator: "On pALD", denominator: "Total CALHIV in care", legend: "Higher is better" },
+  { indicator: "Viral Load Suppression", numerator: "VL suppressed", denominator: "VL eligible with recent test", legend: "Target >=95%" },
+  { indicator: "pALD Transition", numerator: "Transitioned to pALD", denominator: "pALD eligible", legend: "Tracks regimen optimization" },
+  { indicator: "Staff Capacity", numerator: "HW trained in integration", denominator: "Total HW at site", legend: "Training coverage" },
+]
+
 export default function AnalyticsOverviewPage() {
   return (
     <Layout>
@@ -177,6 +184,33 @@ export default function AnalyticsOverviewPage() {
               </div>
             </aside>
           </div>
+          <section className="rounded-2xl bg-white/90 p-4 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900/70 dark:ring-slate-800">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              National Indicator Tracking (Legend)
+            </h2>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b">
+                    <th className="py-2 pr-3">Indicator</th>
+                    <th className="py-2 pr-3">Numerator</th>
+                    <th className="py-2 pr-3">Denominator</th>
+                    <th className="py-2">Legend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nationalIndicators.map((row) => (
+                    <tr key={row.indicator} className="border-b last:border-b-0">
+                      <td className="py-2 pr-3 font-medium">{row.indicator}</td>
+                      <td className="py-2 pr-3">{row.numerator}</td>
+                      <td className="py-2 pr-3">{row.denominator}</td>
+                      <td className="py-2">{row.legend}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
         </div>
       </main>
     </Layout>

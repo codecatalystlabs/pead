@@ -7,17 +7,17 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContain
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function ViralLoadIndicators() {
-  const [data, setData] = useState<{ ageGroup: string; suppressedPct: number; dtgPct: number }[]>([])
+  const { queryString, filters } = useDashboardFilters()
+  const [data, setData] = useState<{ ageGroup: string; suppressedPct: number; dtgPct: number; suppressed: number; updated: number }[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  const { queryString } = useDashboardFilters()
   useEffect(() => {
     let isMounted = true
     fetch(`/api/analytics/viral-load${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => {
         if (!isMounted) return
-        setData((json.data ?? []).map((r: { ageGroup: string; suppressedPct: number; dtgPct: number }) => ({ ageGroup: r.ageGroup, suppressedPct: r.suppressedPct, dtgPct: r.dtgPct })))
+        setData((json.data ?? []).map((r: { ageGroup: string; suppressedPct: number; dtgPct: number; suppressed: number; updated: number }) => ({ ageGroup: r.ageGroup, suppressedPct: r.suppressedPct, dtgPct: r.dtgPct, suppressed: r.suppressed, updated: r.updated })))
       })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
     return () => { isMounted = false }
@@ -30,13 +30,13 @@ export function ViralLoadIndicators() {
     <Card>
       <CardHeader>
         <CardTitle>Viral Load Coverage and Suppression</CardTitle>
-        <CardDescription>VL suppression and DTG-based regimen coverage by age group (%)</CardDescription>
+        <CardDescription>How viral load suppression is improving across age bands, with DTG coverage context.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={{
-            suppressedPct: { label: "VL Suppressed %", color: "hsl(var(--chart-1))" },
-            dtgPct: { label: "On DTG-based %", color: "hsl(var(--chart-2))" },
+            suppressedPct: { label: filters.metricView === "absolute" ? "VL Suppressed (n)" : "VL Suppressed %", color: "hsl(var(--chart-1))" },
+            dtgPct: { label: "On DTG-based regimen %", color: "hsl(var(--chart-2))" },
           }}
           className="h-[300px]"
         >
@@ -44,7 +44,7 @@ export function ViralLoadIndicators() {
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ageGroup" angle={-45} textAnchor="end" height={80} />
-              <YAxis domain={[0, 100]} />
+              <YAxis domain={filters.metricView === "absolute" ? undefined : [0, 100]} />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
@@ -59,18 +59,20 @@ export function ViralLoadIndicators() {
               <Legend />
               <Line
                 type="monotone"
-                dataKey="suppressedPct"
+                dataKey={filters.metricView === "absolute" ? "suppressed" : "suppressedPct"}
                 stroke="hsl(var(--chart-1))"
                 strokeWidth={2}
                 dot={{ fill: "hsl(var(--chart-1))" }}
               />
-              <Line
+              {filters.metricView === "percentage" && (
+                <Line
                 type="monotone"
                 dataKey="dtgPct"
                 stroke="hsl(var(--chart-2))"
                 strokeWidth={2}
                 dot={{ fill: "hsl(var(--chart-2))" }}
-              />
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </ChartContainer>

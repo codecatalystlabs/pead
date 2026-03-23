@@ -4,21 +4,23 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
 type Row = { model: string; number: number; percentage: number }
 
 export function DSDModels() {
+  const { queryString, filters } = useDashboardFilters()
   const [dsdData, setDsdData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/dsd-mmd", { credentials: "include", cache: "no-store" })
+    fetch(`/api/analytics/dsd-mmd${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setDsdData(json.dsdData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
     return () => { isMounted = false }
-  }, [])
+  }, [queryString])
 
   if (error) return <Card><CardContent className="pt-6"><p className="text-xs text-red-600">{error}</p></CardContent></Card>
   if (!dsdData.length) return <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">No DSD data</p></CardContent></Card>
@@ -57,7 +59,11 @@ export function DSDModels() {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ model, percentage }) => `${model}: ${percentage}%`}
+                label={({ model, percentage, number }) =>
+                  filters.metricView === "absolute"
+                    ? `${model}: ${number}`
+                    : `${model}: ${percentage}%`
+                }
                 outerRadius={70}
                 fill="#8884d8"
                 dataKey="number"
@@ -78,7 +84,9 @@ export function DSDModels() {
                 <span>{item.model}</span>
               </div>
               <span className="font-semibold">
-                {item.number.toLocaleString()} ({item.percentage}%)
+                {filters.metricView === "absolute"
+                  ? item.number.toLocaleString()
+                  : `${item.number.toLocaleString()} (${item.percentage}%)`}
               </span>
             </div>
           ))}

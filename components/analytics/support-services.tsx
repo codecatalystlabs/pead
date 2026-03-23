@@ -4,21 +4,23 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
 type Row = { service: string; enrolled: number; total: number }
 
 export function SupportServices() {
+  const { queryString, filters } = useDashboardFilters()
   const [supportData, setSupportData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/dsd-mmd", { credentials: "include", cache: "no-store" })
+    fetch(`/api/analytics/dsd-mmd${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setSupportData(json.supportData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
     return () => { isMounted = false }
-  }, [])
+  }, [queryString])
 
   if (error) return <Card><CardContent className="pt-6"><p className="text-xs text-red-600">{error}</p></CardContent></Card>
   if (!supportData.length) return <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground">No support services data</p></CardContent></Card>
@@ -56,7 +58,9 @@ export function SupportServices() {
               <div key={idx} className="flex items-center justify-between text-xs">
                 <span className="truncate">{item.service}</span>
                 <span className="font-semibold ml-1">
-                  {item.enrolled} / {item.total} ({pct}%)
+                  {filters.metricView === "absolute"
+                    ? `${item.enrolled} / ${item.total}`
+                    : `${item.enrolled} / ${item.total} (${pct}%)`}
                 </span>
               </div>
             )

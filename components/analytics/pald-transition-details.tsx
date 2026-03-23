@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { NumDenomTooltipContent } from "./num-denom-tooltip"
 
 type BandRow = { band: string; eligible: number; transitioned: number; pct: number }
-type AgeRow = { age: string; eligible: number; transitioned: number; pct: number }
+type AgeRow = { age: string; inCare: number; onPald: number; pct: number }
 
 export function PALDTransitionDetails() {
   const [weightBandData, setWeightBandData] = useState<BandRow[]>([])
@@ -38,8 +38,8 @@ export function PALDTransitionDetails() {
       {weightBandData.length > 0 && (
       <Card>
         <CardHeader>
-          <CardTitle>pALD Transition by Weight Band</CardTitle>
-          <CardDescription>Eligible vs transitioned to pALD by weight band</CardDescription>
+          <CardTitle>Reported Eligibility vs on pALD by Weight Band</CardTitle>
+          <CardDescription>Uses the weight-band section of the form to compare reported pALD-eligible counts with reported on-pALD counts.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer
@@ -94,14 +94,14 @@ export function PALDTransitionDetails() {
       {ageBandData.length > 0 && (
       <Card>
         <CardHeader>
-          <CardTitle>pALD Transition by Age Band</CardTitle>
-          <CardDescription>Eligible vs transitioned to pALD by age group</CardDescription>
+          <CardTitle>CALHIV in Care vs on pALD by Age Band</CardTitle>
+          <CardDescription>Uses the age-band section of the form to compare reported in-care counts with reported on-pALD counts.</CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer
             config={{
-              eligible: { label: "Eligible", color: "hsl(var(--chart-1))" },
-              transitioned: { label: "Transitioned", color: "hsl(var(--chart-2))" },
+              inCare: { label: "In care", color: "hsl(var(--chart-1))" },
+              onPald: { label: "On pALD", color: "hsl(var(--chart-2))" },
             }}
             className="h-[300px]"
           >
@@ -115,9 +115,9 @@ export function PALDTransitionDetails() {
                   <NumDenomTooltipContent
                     getRows={(p) =>
                       [{
-                        label: "Transitioned / Eligible",
-                        numerator: Number(p.transitioned ?? 0),
-                        denominator: Number(p.eligible ?? 0),
+                        label: "On pALD / In care",
+                        numerator: Number(p.onPald ?? 0),
+                        denominator: Number(p.inCare ?? 0),
                         suffix: ` (${Number(p.pct ?? 0)}%)`,
                       }]
                     }
@@ -126,8 +126,8 @@ export function PALDTransitionDetails() {
                 }
               />
                 <Legend />
-                <Bar dataKey="eligible" fill="hsl(var(--chart-1))" />
-                <Bar dataKey="transitioned" fill="hsl(var(--chart-2))" />
+                <Bar dataKey="inCare" fill="hsl(var(--chart-1))" />
+                <Bar dataKey="onPald" fill="hsl(var(--chart-2))" />
               </BarChart>
             </ResponsiveContainer>
           </ChartContainer>
@@ -137,7 +137,7 @@ export function PALDTransitionDetails() {
                 <span>{item.age}</span>
                 <span
                   className="font-semibold text-green-600 cursor-help"
-                  title={`Transitioned: ${item.transitioned.toLocaleString()} / Eligible: ${item.eligible.toLocaleString()} (${item.pct}%)`}
+                  title={`On pALD: ${item.onPald.toLocaleString()} / In care: ${item.inCare.toLocaleString()} (${item.pct}%)`}
                 >
                   {item.pct}%
                 </span>

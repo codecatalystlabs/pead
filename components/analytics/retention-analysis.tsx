@@ -4,21 +4,23 @@ import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
 type Row = { cohort: string; active: number; ltfu: number; dead: number; transferredOut: number; transferredIn: number }
 
 export function RetentionAnalysis() {
+  const { queryString } = useDashboardFilters()
   const [data, setData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
-    fetch("/api/analytics/capacity", { credentials: "include", cache: "no-store" })
+    fetch(`/api/analytics/capacity${queryString}`, { credentials: "include", cache: "no-store" })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => { if (!isMounted) return; setData(json.retentionData ?? []) })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
     return () => { isMounted = false }
-  }, [])
+  }, [queryString])
 
   if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
   if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No retention data</p></CardContent></Card>

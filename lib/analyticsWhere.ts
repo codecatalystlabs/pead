@@ -1,6 +1,7 @@
 import type { AuthClaims } from "./auth"
 
 export type WhereSubmission = Record<string, unknown>
+export type ScopedField = "region" | "district" | "facility"
 
 function stringEquals(value: string): { equals: string; mode: "insensitive" } {
   return { equals: value.trim(), mode: "insensitive" }
@@ -17,4 +18,12 @@ export function buildSubmissionWhere(auth: AuthClaims | null): WhereSubmission {
     where.facility = stringEquals(auth.facility)
   }
   return where
+}
+
+export function canApplyScopedField(auth: AuthClaims | null, field: ScopedField): boolean {
+  if (!auth) return false
+  if (auth.jurisdictionLevel === "ADMIN" || auth.jurisdictionLevel === "NATIONAL") return true
+  if (auth.jurisdictionLevel === "REGIONAL") return field !== "region"
+  if (auth.jurisdictionLevel === "DISTRICT") return field === "facility"
+  return false
 }
