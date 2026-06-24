@@ -13,6 +13,7 @@ export function CapacityMetrics() {
   const { queryString } = useDashboardFilters()
   const [data, setData] = useState<Row[]>([])
   const [capacityBuilding, setCapacityBuilding] = useState<CapacityBuildingRow[]>([])
+  const [warnings, setWarnings] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function CapacityMetrics() {
         if (!isMounted) return
         setData(json.data ?? [])
         setCapacityBuilding(json.capacityBuilding ?? [])
+        setWarnings(Array.isArray(json.dataQualityWarnings) ? json.dataQualityWarnings : [])
       })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
     return () => { isMounted = false }
@@ -38,6 +40,13 @@ export function CapacityMetrics() {
         <CardDescription>Health workers trained in integration by cadre</CardDescription>
       </CardHeader>
       <CardContent>
+        {warnings.length > 0 && (
+          <div className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            {warnings.map((w, i) => (
+              <p key={i}>{w}</p>
+            ))}
+          </div>
+        )}
         <ChartContainer
           config={{
             trained: { label: "Trained", color: "hsl(var(--chart-1))" },

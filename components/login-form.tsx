@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
+import { withBasePath } from "@/lib/base-path"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -26,7 +27,7 @@ export function LoginForm() {
     await new Promise((resolve) => setTimeout(resolve, 2000))
     setIsLoading(false)
     // Redirect to dashboard
-    window.location.href = "/dashboard"
+    window.location.href = withBasePath("/dashboard")
   }
 
   const backgroundPattern =

@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeCustomizer } from "@/components/theme-customizer"
+import { BasePathRuntime } from "@/components/base-path-runtime"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
+          <BasePathRuntime />
           {children}
           <ThemeCustomizer />
         </ThemeProvider>

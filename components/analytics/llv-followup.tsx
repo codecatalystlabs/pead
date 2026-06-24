@@ -23,6 +23,7 @@ export function LLVFollowUp() {
   const { queryString, filters } = useDashboardFilters()
   const [data, setData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [tab, setTab] = useState<"ranges" | "iac">("ranges")
   useEffect(() => {
     let isMounted = true
     fetch(`/api/analytics/llv${queryString}`, { credentials: "include", cache: "no-store" })
@@ -44,17 +45,18 @@ export function LLVFollowUp() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="ranges">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
           <TabsList className="h-auto w-full flex-wrap justify-start">
             <TabsTrigger value="ranges">LLV Ranges</TabsTrigger>
             <TabsTrigger value="iac">IAC Tracking</TabsTrigger>
           </TabsList>
           <TabsContent value="ranges">
             <ChartContainer
+              key={`ranges-${tab}`}
               config={{
                 llv: { label: filters.metricView === "absolute" ? "200-999 (n)" : "200-999", color: "hsl(var(--chart-1))" },
-                suppressed: { label: filters.metricView === "absolute" ? "<=200 (n)" : "<=200", color: "hsl(var(--chart-3))" },
-                stillLLVorHLV: { label: filters.metricView === "absolute" ? ">=1000 (n)" : ">=1000", color: "hsl(var(--chart-4))" },
+                suppressed: { label: filters.metricView === "absolute" ? "≤200 (n)" : "≤200", color: "hsl(var(--chart-3))" },
+                stillLLVorHLV: { label: filters.metricView === "absolute" ? "≥1,000 (n)" : "≥1,000", color: "hsl(var(--chart-4))" },
               }}
               className="h-[250px]"
             >
@@ -74,6 +76,7 @@ export function LLVFollowUp() {
           </TabsContent>
           <TabsContent value="iac">
             <ChartContainer
+              key={`iac-${tab}`}
               config={{
                 iac1: { label: "1st IAC", color: "hsl(var(--chart-2))" },
                 iac2: { label: "2nd IAC", color: "hsl(var(--chart-3))" },

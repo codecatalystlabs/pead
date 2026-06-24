@@ -8,9 +8,9 @@ datasource db {
 }
 
 // ---------------------------------------------------------------------------
-// Submission: one row per ODK submission. Columns match SVC data types.
-// Groups (form sections) are not modelled as separate tables.
-// Full payload also stored in `data` (Json) for flexibility.
+// Submission: one row per ODK submission.
+// Primary source of truth is nested JSON in `data` (Section_A … Section_L, SectionG).
+// Typed columns below are denormalized caches populated during ODK sync via lib/odkFieldMap.
 // ---------------------------------------------------------------------------
 model Submission {
   id              String    @id // ODK __id

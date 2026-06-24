@@ -2,6 +2,7 @@ import type React from "react"
 import { LogOut, MoveUpRight, Settings, CreditCard, FileText } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { withBasePath } from "@/lib/base-path"
 
 interface MenuItem {
   label: string
@@ -104,7 +105,7 @@ export default function Profile01({
                 try {
                   await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
                 } finally {
-                  window.location.href = "/auth/login"
+                  window.location.href = withBasePath("/auth/login")
                 }
               }}
             >

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "../theme-toggle"
 import Link from "next/link"
+import { withBasePath } from "@/lib/base-path"
 
 export default function TopNav() {
   const handleMenuToggle = () => {
@@ -103,7 +104,7 @@ export default function TopNav() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 p-2">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg?height=32&width=32" alt="User" />
+                <AvatarImage src={withBasePath("/placeholder.svg")} alt="User" />
                 <AvatarFallback>
                   <User className="h-4 w-4" />
                 </AvatarFallback>
@@ -134,7 +135,7 @@ export default function TopNav() {
                 try {
                   await fetch("/api/auth/logout", { method: "POST", credentials: "include" })
                 } finally {
-                  window.location.href = "/auth/login"
+                  window.location.href = withBasePath("/auth/login")
                 }
               }}
             >

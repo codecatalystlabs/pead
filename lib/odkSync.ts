@@ -1,4 +1,6 @@
 import { prisma } from "./db"
+import { SYNC_COLUMN_ALIASES, META_PATHS } from "./odkFieldMap"
+import { flattenToLowerMap, firstString, sumPaths } from "./jsonMetric"
 
 // Option A: full OData .svc base (e.g. .../forms/YourFormId.svc) – append /Submissions
 const ODK_BASE_URL = process.env.ODK_BASE_URL
@@ -369,35 +371,61 @@ function buildSubmissionPayload(
 ): Record<string, unknown> {
   const flat = flattenForLookup(sub)
 
+  const flatLower = flattenToLowerMap(sub)
+
   const payload: Record<string, unknown> = {
     id,
     data: sub,
     submissionDate: submissionDate ?? undefined,
-    region: region ?? undefined,
-    district: district ?? undefined,
-    facility: facility ?? undefined,
+    region: region ?? firstString(flatLower, META_PATHS.region) ?? undefined,
+    district: district ?? firstString(flatLower, META_PATHS.district) ?? undefined,
+    facility: facility ?? firstString(flatLower, META_PATHS.facility) ?? undefined,
+    A_5_Reporting_period_quarter: firstString(flatLower, META_PATHS.reportingQuarter) ?? undefined,
   }
 
   const allTypedKeys = new Set([
     ...SUBMISSION_DATE_FIELDS,
     ...SUBMISSION_STRING_FIELDS,
     ...SUBMISSION_INT_FIELDS,
+    ...Object.keys(SYNC_COLUMN_ALIASES),
   ])
 
   for (const key of allTypedKeys) {
-    if (key === "submissionDate" || key === "region" || key === "district" || key === "facility") continue
-    const raw =
-      getFromFlattened(flat, key) ??
-      (key === "submissionDate" ? sub.__system?.submissionDate : undefined)
-    if (raw === undefined && key !== "A_6_Date_of_submission_yyyy_mm_dd") continue
-    if (SUBMISSION_DATE_FIELDS.has(key)) {
-      const d = key === "submissionDate" ? submissionDate : toDate(raw)
-      if (d) payload[key] = d
+    if (key === "submissionDate" || key === "region" || key === "district" || key === "facility" || key === "A_5_Reporting_period_quarter") continue
+    const aliasPaths = SYNC_COLUMN_ALIASES[key] ?? [key]
+
+    let resolvedRaw: unknown
+    if (SUBMISSION_STRING_FIELDS.has(key)) {
+      resolvedRaw = firstString(flatLower, aliasPaths) ?? getFromFlattened(flat, key)
+    } else if (SUBMISSION_DATE_FIELDS.has(key)) {
+      resolvedRaw =
+        getFromFlattened(flat, key) ??
+        flatLower[aliasPaths[0]?.toLowerCase() ?? ""] ??
+        (key === "submissionDate" ? sub.__system?.submissionDate : undefined)
     } else if (SUBMISSION_INT_FIELDS.has(key)) {
-      const n = toInt(raw)
+      resolvedRaw =
+        aliasPaths.length > 1
+          ? sumPaths(flatLower, aliasPaths)
+          : getFromFlattened(flat, key) ?? flatLower[aliasPaths[0]?.toLowerCase() ?? ""]
+    } else if (SYNC_COLUMN_ALIASES[key]) {
+      resolvedRaw =
+        aliasPaths.length > 1
+          ? sumPaths(flatLower, aliasPaths)
+          : getFromFlattened(flat, key) ?? flatLower[aliasPaths[0]?.toLowerCase() ?? ""]
+    } else {
+      resolvedRaw = getFromFlattened(flat, key) ?? flatLower[key.toLowerCase()]
+    }
+
+    if (resolvedRaw === undefined && key !== "A_6_Date_of_submission_yyyy_mm_dd") continue
+
+    if (SUBMISSION_DATE_FIELDS.has(key)) {
+      const d = key === "submissionDate" ? submissionDate : toDate(resolvedRaw)
+      if (d) payload[key] = d
+    } else if (SUBMISSION_INT_FIELDS.has(key) || (SYNC_COLUMN_ALIASES[key] && !SUBMISSION_STRING_FIELDS.has(key))) {
+      const n = typeof resolvedRaw === "number" ? Math.round(resolvedRaw) : toInt(resolvedRaw)
       if (n !== null) payload[key] = n
     } else {
-      const s = toStringOrNull(raw)
+      const s = toStringOrNull(resolvedRaw)
       if (s !== null) payload[key] = s
     }
   }
@@ -465,20 +493,21 @@ export async function syncOdkToDatabase() {
       }
 
       const flatSub = flattenForLookup(sub)
+      const flatLower = flattenToLowerMap(sub)
       const region =
+        firstString(flatLower, META_PATHS.region) ??
         (getFromFlattened(flatSub, "A_3_Region") as string | undefined) ??
-        (getFromFlattened(flatSub, "region") as string | undefined) ??
         null
       const district =
+        firstString(flatLower, META_PATHS.district) ??
         (getFromFlattened(flatSub, "A_4_1_District_Central_Region") as string | undefined) ??
         (getFromFlattened(flatSub, "A_4_2_District_Eastern_Region") as string | undefined) ??
         (getFromFlattened(flatSub, "A_4_3_District_Northern_Region") as string | undefined) ??
         (getFromFlattened(flatSub, "A_4_4_District_Western_Region") as string | undefined) ??
-        (getFromFlattened(flatSub, "district") as string | undefined) ??
         null
       const facility =
+        firstString(flatLower, META_PATHS.facility) ??
         (getFromFlattened(flatSub, "A_2_Name_of_reporting_unit") as string | undefined) ??
-        (getFromFlattened(flatSub, "facility") as string | undefined) ??
         null
 
       const payload = buildSubmissionPayload(id, sub, submissionDate, region, district, facility)

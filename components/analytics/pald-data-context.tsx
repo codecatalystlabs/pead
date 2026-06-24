@@ -104,13 +104,13 @@ export function PALDDataContext() {
           <div className="mt-2 space-y-1">
             <p>
               Reported total CALHIV: {ctx.totalCalhiv.toLocaleString()}.
-              {" "}Age bands: {summary.totalCalhivFromAgeBands.toLocaleString()}.
-              {" "}Weight bands: {summary.totalCalhivFromWeightBands.toLocaleString()}.
+              {" "}Age bands: {(summary.totalCalhivFromAgeBands ?? 0).toLocaleString()}.
+              {" "}Weight bands: {(summary.totalCalhivFromWeightBands ?? 0).toLocaleString()}.
             </p>
             <p>
-              Reported on pALD: {summary.paldOnPaldByWeight.toLocaleString()}.
-              {" "}Age-band on pALD: {summary.paldOnPaldByAge.toLocaleString()}.
-              {" "}Weight-band eligible: {summary.paldEligibleByWeight.toLocaleString()}.
+              Reported on pALD: {(summary.paldOnPaldByWeight ?? 0).toLocaleString()}.
+              {" "}Age-band on pALD: {(summary.paldOnPaldByAge ?? 0).toLocaleString()}.
+              {" "}Weight-band eligible: {(summary.paldEligibleByWeight ?? 0).toLocaleString()}.
             </p>
             {summary.careModelPatients > 0 && (
               <p>

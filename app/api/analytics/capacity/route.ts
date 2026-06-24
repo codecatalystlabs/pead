@@ -2,60 +2,80 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
+import { flattenToLowerMap, isYes, sumPaths } from "@/lib/jsonMetric"
+import { CAPACITY_PATHS } from "@/lib/odkFieldMap"
 
 export const dynamic = "force-dynamic"
 const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
-
-const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
   const auth = getAuthFromRequest(req)
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  const [capacity, retention, supervisionRows] = await Promise.all([
-    prisma.submission.aggregate({
-      where,
-      _sum: { total_number_hw_at_site: true, number_hw_trained_integra: true, no_hf_staff_eligible_pald: true, number_hf_staff_oriented_pald: true },
-    }),
-    prisma.submission.aggregate({
-      where,
-      _sum: { I_1_How_many_CALHIV_or_review_last_month: true, I_1_1_Of_those_who_w_r_their_appointments: true },
-    }),
-    prisma.submission.findMany({
-      where,
-      select: { F_1_5_Have_you_had_support_sup: true },
-    }),
-  ])
+  const rows = await prisma.submission.findMany({ where, select: { data: true } })
 
-  const totalHw = s(capacity._sum.total_number_hw_at_site)
-  const trained = s(capacity._sum.number_hw_trained_integra)
+  let totalHw = 0
+  let trained = 0
+  let orientedEligible = 0
+  let oriented = 0
+  let inCare = 0
+  let keptAppointments = 0
+  let supportSupervision = 0
+  let mentorships = 0
+  let normalizedTrainingRows = 0
+  let normalizedTotalRows = 0
+
+  for (const row of rows) {
+    const flat = flattenToLowerMap(row.data)
+    const eligible = sumPaths(flat, CAPACITY_PATHS.staffEligible)
+    const trainedTotal = sumPaths(flat, CAPACITY_PATHS.staffTrained)
+    const trainedByDomain = sumPaths(flat, CAPACITY_PATHS.staffTrainedByDomain)
+    const trainedAtSite = Math.max(trainedTotal, trainedByDomain)
+    const totalAtSite = Math.max(eligible, trainedAtSite)
+
+    if (trainedAtSite !== trainedTotal || trainedAtSite !== trainedByDomain) normalizedTrainingRows += 1
+    if (totalAtSite !== eligible) normalizedTotalRows += 1
+
+    totalHw += totalAtSite
+    trained += trainedAtSite
+    orientedEligible += sumPaths(flat, CAPACITY_PATHS.paldOrientedEligible)
+    oriented += sumPaths(flat, CAPACITY_PATHS.paldOriented)
+    inCare += sumPaths(flat, CAPACITY_PATHS.inCare)
+    keptAppointments += sumPaths(flat, CAPACITY_PATHS.retentionKept)
+    if (isYes(flat, CAPACITY_PATHS.supportSupervision)) supportSupervision += 1
+    if (isYes(flat, CAPACITY_PATHS.mentorship)) mentorships += 1
+  }
+
   const data = [
     { cadre: "Integration-trained", trained, total: totalHw, pct: totalHw > 0 ? Math.round((trained / totalHw) * 1000) / 10 : 0 },
-    { cadre: "pALD-oriented", trained: s(capacity._sum.number_hf_staff_oriented_pald), total: s(capacity._sum.no_hf_staff_eligible_pald), pct: s(capacity._sum.no_hf_staff_eligible_pald) > 0 ? Math.round((s(capacity._sum.number_hf_staff_oriented_pald) / s(capacity._sum.no_hf_staff_eligible_pald)) * 1000) / 10 : 0 },
+    { cadre: "pALD-oriented", trained: oriented, total: orientedEligible, pct: orientedEligible > 0 ? Math.round((oriented / orientedEligible) * 1000) / 10 : 0 },
   ]
 
-  const inCare = s(retention._sum.I_1_How_many_CALHIV_or_review_last_month)
-  const keptAppointments = s(retention._sum.I_1_1_Of_those_who_w_r_their_appointments)
   const retentionData = [
-    { cohort: "In care (last month)", active: inCare, ltfu: 0, dead: 0, transferredOut: 0, transferredIn: 0 },
+    { cohort: "Expected for review", active: inCare, ltfu: 0, dead: 0, transferredOut: 0, transferredIn: 0 },
     { cohort: "Kept appointments", active: keptAppointments, ltfu: 0, dead: 0, transferredOut: 0, transferredIn: 0 },
   ]
 
-  const supportSupervision = supervisionRows.reduce((acc, row) => {
-    return typeof row.F_1_5_Have_you_had_support_sup === "string" && row.F_1_5_Have_you_had_support_sup.toLowerCase().includes("yes")
-      ? acc + 1
-      : acc
-  }, 0)
-  const mentorships = s(capacity._sum.number_hf_staff_oriented_pald)
-  const trainings = trained
+  const dataQualityWarnings: string[] = []
+  if (normalizedTrainingRows > 0) {
+    dataQualityWarnings.push(
+      `${normalizedTrainingRows} submission(s) had inconsistent trained-staff fields; totals were normalized.`,
+    )
+  }
+  if (normalizedTotalRows > 0) {
+    dataQualityWarnings.push(
+      `${normalizedTotalRows} submission(s) had eligible staff lower than trained counts; denominators were normalized.`,
+    )
+  }
 
   return NextResponse.json(
     {
       data,
       retentionData,
+      dataQualityWarnings,
       capacityBuilding: [
-        { item: "Trainings", value: trainings },
+        { item: "Trainings", value: trained },
         { item: "Mentorships", value: mentorships },
         { item: "Support supervision", value: supportSupervision },
       ],

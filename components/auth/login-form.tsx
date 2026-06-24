@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
+import { withBasePath } from "@/lib/base-path"
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -36,7 +37,7 @@ export function LoginForm() {
         setIsLoading(false)
         return
       }
-      window.location.href = "/dashboard-analytics"
+      window.location.href = withBasePath("/dashboard-analytics")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed")
       setIsLoading(false)

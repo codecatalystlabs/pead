@@ -25,8 +25,10 @@ export function statusFromRate(
 }
 
 export function statusClassName(status: MetricStatus): string {
-  if (status === "good") return "border-green-200 bg-green-50/60 dark:border-green-900 dark:bg-green-950/30"
-  if (status === "warning") return "border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/30"
-  if (status === "critical") return "border-red-200 bg-red-50/60 dark:border-red-900 dark:bg-red-950/30"
+  // Only background changes; keep border styling consistent across cards.
+  // Use `!` so it always wins over `bg-card` on `Card`.
+  if (status === "good") return "!bg-green-100/70 dark:!bg-green-950/45"
+  if (status === "warning") return "!bg-amber-100/70 dark:!bg-amber-950/45"
+  if (status === "critical") return "!bg-red-100/70 dark:!bg-red-950/45"
   return ""
 }

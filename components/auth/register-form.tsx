@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, Building, Github } from "lucide-react"
 import { AuthBrandSection } from "./auth-brand-section"
+import { withBasePath } from "@/lib/base-path"
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false)
@@ -32,7 +33,7 @@ export function RegisterForm() {
     await new Promise((resolve) => setTimeout(resolve, 2000))
 
     // Redirect to dashboard
-    window.location.href = "/dashboard"
+    window.location.href = withBasePath("/dashboard")
   }
 
   const handleSocialRegister = (provider: string) => {

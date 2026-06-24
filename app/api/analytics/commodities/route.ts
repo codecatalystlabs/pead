@@ -2,35 +2,42 @@ import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters } from "@/lib/analyticsFilters"
+import { flattenToLowerMap, sumPaths } from "@/lib/jsonMetric"
+import { COMMODITY_PATHS } from "@/lib/odkFieldMap"
 
 export const dynamic = "force-dynamic"
 const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
-
-const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
   const auth = getAuthFromRequest(req)
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  const agg = await prisma.submission.aggregate({
-    where,
-    _sum: {
-      G_3_3_What_is_the_mo_tock_MOS_available: true,
-      G_4_3_What_is_the_mo_tock_MOS_available: true,
-      G_5_3_What_is_the_mo_tock_MOS_available: true,
-      G_6_3_What_is_the_mo_tock_MOS_available: true,
-    },
-    _count: { id: true },
-  })
+  const rows = await prisma.submission.findMany({ where, select: { data: true } })
+  let mosPALD = 0
+  let mosAbc3tc = 0
+  let mosDtg10 = 0
+  let mosAzt3tc = 0
+  let mosDrv = 0
+  let count = 0
 
-  const n = Math.max(agg._count.id, 1)
+  for (const row of rows) {
+    const f = flattenToLowerMap(row.data)
+    mosPALD += sumPaths(f, COMMODITY_PATHS.mosPALD)
+    mosAbc3tc += sumPaths(f, COMMODITY_PATHS.mosAbc3tc)
+    mosDtg10 += sumPaths(f, COMMODITY_PATHS.mosDtg10)
+    mosAzt3tc += sumPaths(f, COMMODITY_PATHS.mosAzt3tc)
+    mosDrv += sumPaths(f, COMMODITY_PATHS.mosDrv)
+    count += 1
+  }
+
+  const avg = (n: number) => (count > 0 ? Math.round((n / count) * 10) / 10 : 0)
   const data = [
-    { commodity: "pALD (60/30/5 mg)", mos: Math.round((s(agg._sum.G_3_3_What_is_the_mo_tock_MOS_available) / n) * 10) / 10, optimal: 3, status: s(agg._sum.G_3_3_What_is_the_mo_tock_MOS_available) / n >= 3 ? "good" : s(agg._sum.G_3_3_What_is_the_mo_tock_MOS_available) / n >= 1 ? "warning" : "critical" },
-    { commodity: "ABC/3TC (120/60 mg)", mos: Math.round((s(agg._sum.G_4_3_What_is_the_mo_tock_MOS_available) / n) * 10) / 10, optimal: 3, status: s(agg._sum.G_4_3_What_is_the_mo_tock_MOS_available) / n >= 3 ? "good" : s(agg._sum.G_4_3_What_is_the_mo_tock_MOS_available) / n >= 1 ? "warning" : "critical" },
-    { commodity: "DTG 10 mg", mos: Math.round((s(agg._sum.G_5_3_What_is_the_mo_tock_MOS_available) / n) * 10) / 10, optimal: 3, status: s(agg._sum.G_5_3_What_is_the_mo_tock_MOS_available) / n >= 3 ? "good" : s(agg._sum.G_5_3_What_is_the_mo_tock_MOS_available) / n >= 1 ? "warning" : "critical" },
-    { commodity: "AZT/3TC (60/30 mg)", mos: Math.round((s(agg._sum.G_6_3_What_is_the_mo_tock_MOS_available) / n) * 10) / 10, optimal: 3, status: s(agg._sum.G_6_3_What_is_the_mo_tock_MOS_available) / n >= 3 ? "good" : s(agg._sum.G_6_3_What_is_the_mo_tock_MOS_available) / n >= 1 ? "warning" : "critical" },
-    { commodity: "Darunavir (DRV)", mos: 0, optimal: 3, status: "critical" as const },
+    { commodity: "ABC/3TC/DTG (pALD)", mos: avg(mosPALD) },
+    { commodity: "ABC/3TC 120/60", mos: avg(mosAbc3tc) },
+    { commodity: "DTG 10 mg", mos: avg(mosDtg10) },
+    { commodity: "AZT/3TC 60/30", mos: avg(mosAzt3tc) },
+    { commodity: "Darunavir", mos: avg(mosDrv) },
   ]
 
   return NextResponse.json({ data }, { headers: NO_STORE })

@@ -47,14 +47,14 @@ export function SummaryCards() {
           },
           {
             title: "Care Integration (on pALD / Total CALHIV)",
-            value: `${data.careIntegrationRate?.toFixed?.(1) ?? "0.0"}%`,
+            value: `${data.careIntegrationRate?.toFixed?.(1) ?? data.careIntegrationRate}%`,
             description: "Proportion of CALHIV who have transitioned to pALD",
             tooltip: data.paldOnPald != null && data.totalCalhiv != null ? `On pALD: ${Number(data.paldOnPald).toLocaleString()} / Total: ${Number(data.totalCalhiv).toLocaleString()} (${(data.careIntegrationRate ?? 0).toFixed(1)}%)` : undefined,
             status: statusFromRate(data.careIntegrationRate ?? 0, { warning: 50, good: 80 }),
           },
           {
             title: "pALD Transition Rate",
-            value: `${data.paldTransitionRate?.toFixed?.(1) ?? "0.0"}%`,
+            value: `${data.paldTransitionRate?.toFixed?.(1) ?? data.paldTransitionRate}%`,
             description: "Eligible CALHIV who have transitioned to pALD",
             tooltip:
               data.paldEligible != null
@@ -66,14 +66,14 @@ export function SummaryCards() {
           },
           {
             title: "Staff Training Coverage",
-            value: `${data.staffTrainingCoverage?.toFixed?.(1) ?? "0.0"}%`,
+            value: `${data.staffTrainingCoverage?.toFixed?.(1) ?? data.staffTrainingCoverage}%`,
             description: "Health workers trained in integration",
             tooltip: data.trainedHw != null && data.totalHw != null ? `Trained: ${Number(data.trainedHw).toLocaleString()} / Total: ${Number(data.totalHw).toLocaleString()} (${(data.staffTrainingCoverage ?? 0).toFixed(1)}%)` : undefined,
             status: statusFromRate(data.staffTrainingCoverage ?? 0, { warning: 60, good: 85 }),
           },
           {
             title: "Viral Load Suppression",
-            value: `${data.vlSuppressionRate?.toFixed?.(1) ?? "0.0"}%`,
+            value: `${data.vlSuppressionRate?.toFixed?.(1) ?? data.vlSuppressionRate}%`,
             description: "Clients with a suppressed viral load among those with recent VL results",
             tooltip: data.vlSuppressed != null && data.totalVlEligible != null ? `Suppressed: ${Number(data.vlSuppressed).toLocaleString()} / Eligible: ${Number(data.totalVlEligible).toLocaleString()} (${(data.vlSuppressionRate ?? 0).toFixed(1)}%)` : undefined,
             status: statusFromRate(data.vlSuppressionRate ?? 0, { warning: 80, good: 95 }),

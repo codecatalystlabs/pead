@@ -3,83 +3,69 @@ import { prisma } from "@/lib/db"
 import { getAuthFromRequest } from "@/lib/auth"
 import { buildWhereWithFilters, parseFilterParams } from "@/lib/analyticsFilters"
 import { filterRowsByAgeBand } from "@/lib/ageBand"
+import { flattenToLowerMap, sumPaths } from "@/lib/jsonMetric"
+import { AGE_BAND_KEYS, HLV_METRICS, hlvPaths, type AgeBandKey } from "@/lib/odkFieldMap"
 
 export const dynamic = "force-dynamic"
 const NO_STORE = { "Cache-Control": "private, no-store, no-cache" }
-
-const s = (v: number | null | undefined) => v ?? 0
 
 export async function GET(req: Request) {
   const auth = getAuthFromRequest(req)
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
-  const [k1, k2, k3, k4] = await Promise.all([
-    prisma.submission.aggregate({
-      where,
-      _sum: {
-        K_1_1_No_clhiv_hlv_0_4: true,
-        K_1_2_Number_who_com_high_level_viraemia: true,
-        K_1_3_Number_who_com_high_level_viraemia: true,
-        K_1_4_Number_who_com_high_level_viraemia: true,
-        K_1_5_No_comp_3iac_0_4: true,
-        K_1_6_No_comp_4iac_0_4: true,
-        K_1_8_No_viral_supp_3iac_0_4: true,
-        K_1_10_Number_still_high_level_viraemia: true,
-        K_1_11_Number_referr_high_level_viraemia: true,
-      },
-    }),
-    prisma.submission.aggregate({
-      where,
-      _sum: {
-        K_2_1_No_CALHIV_with_hlv: true,
-        K_2_2_Number_who_com_high_level_viraemia: true,
-        K_2_3_Number_who_com_high_level_viraemia: true,
-        K_2_4_Number_who_com_high_level_viraemia: true,
-        K_2_5_No_completed_3_iac_5_9: true,
-        K_2_6_No_completed_4_iac_5_9: true,
-        K_2_8_Number_who_ach_high_level_viraemia: true,
-        K_2_10_Number_still_high_level_viraemia: true,
-        K_2_11_Number_referr_high_level_viraemia: true,
-      },
-    }),
-    prisma.submission.aggregate({
-      where,
-      _sum: {
-        K_3_1_No_of_CLHIV_hlv: true,
-        K_3_2_Number_who_com_high_level_viraemia: true,
-        K_3_3_Number_who_com_high_level_viraemia: true,
-        K_3_4_Number_who_com_high_level_viraemia: true,
-        K_3_5_No_completed_3_iac_10_14: true,
-        K_3_6_No_completed_4_iac_10_14: true,
-        K_3_8_No_achieved_supp_3_more: true,
-        K_3_10_Number_still_high_level_viraemia: true,
-        K_3_11_Number_referr_high_level_viraemia: true,
-      },
-    }),
-    prisma.submission.aggregate({
-      where,
-      _sum: {
-        K_4_1_No_of_CALHIV_hlv: true,
-        K_4_2_Number_who_com_high_level_viraemia: true,
-        K_4_3_Number_who_com_high_level_viraemia: true,
-        K_4_4_Number_who_com_high_level_viraemia: true,
-        K_4_5_No_completed_3_iac: true,
-        K_4_6_No_completed_4_iac: true,
-        K_4_8_No_achieved_supp: true,
-        K_4_10_Number_still_high_level_viraemia: true,
-        K_4_11_Number_referr_high_level_viraemia: true,
-      },
-    }),
-  ])
+  const rows = await prisma.submission.findMany({ where, select: { data: true } })
+  const byAge: Record<AgeBandKey, {
+    hlv: number
+    iac1: number
+    iac2: number
+    iac3: number
+    iac4Plus: number
+    suppressed: number
+    unsuppressed: number
+    drReferred: number
+    drSwitched: number
+    repeatViralLoad: number
+  }> = {
+    "0 - 4 years": { hlv: 0, iac1: 0, iac2: 0, iac3: 0, iac4Plus: 0, suppressed: 0, unsuppressed: 0, drReferred: 0, drSwitched: 0, repeatViralLoad: 0 },
+    "5 - 9 years": { hlv: 0, iac1: 0, iac2: 0, iac3: 0, iac4Plus: 0, suppressed: 0, unsuppressed: 0, drReferred: 0, drSwitched: 0, repeatViralLoad: 0 },
+    "10 - 14 years": { hlv: 0, iac1: 0, iac2: 0, iac3: 0, iac4Plus: 0, suppressed: 0, unsuppressed: 0, drReferred: 0, drSwitched: 0, repeatViralLoad: 0 },
+    "15 - 19 years": { hlv: 0, iac1: 0, iac2: 0, iac3: 0, iac4Plus: 0, suppressed: 0, unsuppressed: 0, drReferred: 0, drSwitched: 0, repeatViralLoad: 0 },
+  }
+
+  for (const row of rows) {
+    const f = flattenToLowerMap(row.data)
+    for (const band of AGE_BAND_KEYS) {
+      byAge[band].hlv += sumPaths(f, hlvPaths(HLV_METRICS.hlv, band))
+      byAge[band].iac1 += sumPaths(f, hlvPaths(HLV_METRICS.iac1, band))
+      byAge[band].iac2 += sumPaths(f, hlvPaths(HLV_METRICS.iac2, band))
+      byAge[band].iac3 += sumPaths(f, hlvPaths(HLV_METRICS.iac3, band))
+      byAge[band].iac4Plus += sumPaths(f, hlvPaths(HLV_METRICS.iac4Plus, band))
+      byAge[band].suppressed += sumPaths(f, hlvPaths(HLV_METRICS.suppressed, band))
+      byAge[band].unsuppressed += sumPaths(f, hlvPaths(HLV_METRICS.unsuppressed, band))
+      byAge[band].drReferred += sumPaths(f, hlvPaths(HLV_METRICS.drReferred, band))
+      byAge[band].drSwitched += sumPaths(f, hlvPaths(HLV_METRICS.drSwitched, band))
+    }
+  }
 
   const params = parseFilterParams(req.url)
-  const data = filterRowsByAgeBand([
-    { ageGroup: "0 - 4 years", hlv: s(k1._sum.K_1_1_No_clhiv_hlv_0_4), iac1: s(k1._sum.K_1_2_Number_who_com_high_level_viraemia), iac2: s(k1._sum.K_1_3_Number_who_com_high_level_viraemia), iac3: s(k1._sum.K_1_5_No_comp_3iac_0_4), iac4Plus: s(k1._sum.K_1_6_No_comp_4iac_0_4), suppressed: s(k1._sum.K_1_8_No_viral_supp_3iac_0_4), unsuppressed: s(k1._sum.K_1_10_Number_still_high_level_viraemia), drReferred: s(k1._sum.K_1_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k1._sum.K_1_4_Number_who_com_high_level_viraemia), below1000: s(k1._sum.K_1_8_No_viral_supp_3iac_0_4), aboveOrEq1000: s(k1._sum.K_1_10_Number_still_high_level_viraemia) },
-    { ageGroup: "5 - 9 years", hlv: s(k2._sum.K_2_1_No_CALHIV_with_hlv), iac1: s(k2._sum.K_2_2_Number_who_com_high_level_viraemia), iac2: s(k2._sum.K_2_3_Number_who_com_high_level_viraemia), iac3: s(k2._sum.K_2_5_No_completed_3_iac_5_9), iac4Plus: s(k2._sum.K_2_6_No_completed_4_iac_5_9), suppressed: s(k2._sum.K_2_8_Number_who_ach_high_level_viraemia), unsuppressed: s(k2._sum.K_2_10_Number_still_high_level_viraemia), drReferred: s(k2._sum.K_2_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k2._sum.K_2_4_Number_who_com_high_level_viraemia), below1000: s(k2._sum.K_2_8_Number_who_ach_high_level_viraemia), aboveOrEq1000: s(k2._sum.K_2_10_Number_still_high_level_viraemia) },
-    { ageGroup: "10 - 14 years", hlv: s(k3._sum.K_3_1_No_of_CLHIV_hlv), iac1: s(k3._sum.K_3_2_Number_who_com_high_level_viraemia), iac2: s(k3._sum.K_3_3_Number_who_com_high_level_viraemia), iac3: s(k3._sum.K_3_5_No_completed_3_iac_10_14), iac4Plus: s(k3._sum.K_3_6_No_completed_4_iac_10_14), suppressed: s(k3._sum.K_3_8_No_achieved_supp_3_more), unsuppressed: s(k3._sum.K_3_10_Number_still_high_level_viraemia), drReferred: s(k3._sum.K_3_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k3._sum.K_3_4_Number_who_com_high_level_viraemia), below1000: s(k3._sum.K_3_8_No_achieved_supp_3_more), aboveOrEq1000: s(k3._sum.K_3_10_Number_still_high_level_viraemia) },
-    { ageGroup: "15 - 19 years", hlv: s(k4._sum.K_4_1_No_of_CALHIV_hlv), iac1: s(k4._sum.K_4_2_Number_who_com_high_level_viraemia), iac2: s(k4._sum.K_4_3_Number_who_com_high_level_viraemia), iac3: s(k4._sum.K_4_5_No_completed_3_iac), iac4Plus: s(k4._sum.K_4_6_No_completed_4_iac), suppressed: s(k4._sum.K_4_8_No_achieved_supp), unsuppressed: s(k4._sum.K_4_10_Number_still_high_level_viraemia), drReferred: s(k4._sum.K_4_11_Number_referr_high_level_viraemia), repeatViralLoad: s(k4._sum.K_4_4_Number_who_com_high_level_viraemia), below1000: s(k4._sum.K_4_8_No_achieved_supp), aboveOrEq1000: s(k4._sum.K_4_10_Number_still_high_level_viraemia) },
-  ], params.ageBand)
+  const data = filterRowsByAgeBand(
+    AGE_BAND_KEYS.map((ageGroup) => {
+      const row = byAge[ageGroup]
+      const repeatViralLoad = row.iac1 + row.iac2 + row.iac3 + row.iac4Plus
+      return {
+        ageGroup,
+        ...row,
+        repeatViralLoad,
+        below1000: row.suppressed,
+        aboveOrEq1000: row.unsuppressed,
+        maintainedOnTreatment: Math.max(0, row.drReferred - row.drSwitched),
+        switchedTreatment: row.drSwitched,
+        treatmentSubstitution: 0,
+      }
+    }),
+    params.ageBand,
+  )
 
   return NextResponse.json({ data }, { headers: NO_STORE })
 }

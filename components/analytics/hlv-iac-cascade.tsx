@@ -26,6 +26,7 @@ export function HLVIACCascade() {
   const { queryString, filters } = useDashboardFilters()
   const [data, setData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [tab, setTab] = useState<"iac" | "four-iac" | "hiv-dr">("iac")
   useEffect(() => {
     let isMounted = true
     fetch(`/api/analytics/hlv-iac${queryString}`, { credentials: "include", cache: "no-store" })
@@ -43,11 +44,11 @@ export function HLVIACCascade() {
       <CardHeader className="space-y-2">
         <CardTitle>High-Level Viremia (HLV) & IAC Cascade</CardTitle>
         <CardDescription>
-          HLV (>=1000 copies/mL), IAC progression, repeat viral load testing, and HIV DR tracking by age group.
+          HLV (≥1,000 copies/mL), IAC progression, repeat viral load testing, and HIV DR tracking by age group.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="iac" className="w-full">
+        <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
           <TabsList className="h-auto w-full flex-wrap justify-start">
             <TabsTrigger value="iac">IAC Cascade</TabsTrigger>
             <TabsTrigger value="four-iac">4 IAC and more</TabsTrigger>
@@ -55,6 +56,7 @@ export function HLVIACCascade() {
           </TabsList>
           <TabsContent value="iac">
             <ChartContainer
+              key={`iac-${tab}`}
               config={{
                 hlv: { label: "Total HLV", color: "hsl(var(--chart-1))" },
                 iac1: { label: "1st IAC", color: "hsl(var(--chart-2))" },
@@ -82,10 +84,11 @@ export function HLVIACCascade() {
           </TabsContent>
           <TabsContent value="four-iac">
             <ChartContainer
+              key={`four-iac-${tab}`}
               config={{
                 repeatViralLoad: { label: "Repeat Viral Load Test", color: "hsl(var(--chart-1))" },
-                below1000: { label: "<1000", color: "hsl(var(--chart-3))" },
-                aboveOrEq1000: { label: ">=1000", color: "hsl(var(--chart-4))" },
+                below1000: { label: "<1,000", color: "hsl(var(--chart-3))" },
+                aboveOrEq1000: { label: "≥1,000", color: "hsl(var(--chart-4))" },
               }}
               className="h-[250px]"
             >
