@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -154,8 +154,7 @@ export function AHDScreening() {
               }}
               className="h-[280px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
+              <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="ageGroup" />
                   <YAxis />
@@ -166,7 +165,6 @@ export function AHDScreening() {
                   <Bar dataKey="c" name={labels.c} fill="hsl(var(--chart-3))" />
                   <Bar dataKey="d" name={labels.d} fill="hsl(var(--chart-4))" />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </TabsContent>
         </Tabs>

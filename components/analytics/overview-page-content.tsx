@@ -40,12 +40,12 @@ export default function OverviewPageContent() {
       <PALDDataContext />
       <SummaryCards />
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 min-w-0">
         <AgeBandDistribution />
         <WeightBandDistribution />
       </div>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 min-w-0">
         <PaldOverviewStrip />
         <CareModelDistribution />
       </div>
@@ -54,7 +54,7 @@ export default function OverviewPageContent() {
 
       <AhdOverviewStrip />
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 min-w-0">
         <MMDComponent overviewMode />
         <DSDModels overviewMode />
       </div>

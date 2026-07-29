@@ -22,7 +22,7 @@ export function ViralLoadPageContent() {
       <DashboardFilterBar />
       <RetentionAnalysis />
       <ViralLoadIndicators />
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 min-w-0">
         <HLVIACCascade />
         <LLVFollowUp />
       </div>

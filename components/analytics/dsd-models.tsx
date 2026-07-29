@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -68,8 +68,7 @@ export function DSDModels({ overviewMode = false }: Props) {
           config={{ number: { label: "Patients", color: "hsl(var(--chart-2))" } }}
           className="h-[240px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartRows}>
+          <BarChart data={chartRows}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="short" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -85,7 +84,6 @@ export function DSDModels({ overviewMode = false }: Props) {
               />
               <Bar dataKey="number" fill="hsl(var(--chart-2))" name="Patients" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-2 space-y-1">
           {dsdData.map((item) => (

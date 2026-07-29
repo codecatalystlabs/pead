@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type Props = { summaryMode?: boolean }
@@ -79,8 +79,7 @@ export function ViralLoadIndicators({ summaryMode = false }: Props) {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+          <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="ageGroup" angle={-20} textAnchor="end" height={60} />
               <YAxis domain={absolute ? undefined : [0, 100]} />
@@ -113,7 +112,6 @@ export function ViralLoadIndicators({ summaryMode = false }: Props) {
                 </>
               )}
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>

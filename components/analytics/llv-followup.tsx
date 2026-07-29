@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -93,8 +93,7 @@ export function LLVFollowUp() {
               }}
               className="h-[250px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+              <BarChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="ageGroup" />
                   <YAxis />
@@ -106,7 +105,6 @@ export function LLVFollowUp() {
                   <Bar dataKey="iac3" fill="hsl(var(--chart-4))" name="3rd IAC" />
                   <Bar dataKey="iac4Plus" fill="hsl(var(--chart-5))" name="4+ IAC" />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </TabsContent>
           <TabsContent value="four-iac">
@@ -119,8 +117,7 @@ export function LLVFollowUp() {
               }}
               className="h-[250px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+              <BarChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="ageGroup" />
                   <YAxis />
@@ -130,7 +127,6 @@ export function LLVFollowUp() {
                   <Bar dataKey="suppressed" fill="hsl(var(--chart-3))" name="Suppressed (≤200)" />
                   <Bar dataKey="stillLLVorHLV" fill="hsl(var(--chart-4))" name="Still LLV/HLV" />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </TabsContent>
           <TabsContent value="outcomes">
@@ -143,8 +139,7 @@ export function LLVFollowUp() {
               }}
               className="h-[250px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={outcomeData}>
+              <BarChart data={outcomeData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="ageGroup" />
                   <YAxis />
@@ -154,7 +149,6 @@ export function LLVFollowUp() {
                   <Bar dataKey="suppressed" fill="hsl(var(--chart-3))" name="Suppressed" />
                   <Bar dataKey="stillLLVorHLV" fill="hsl(var(--chart-4))" name="Still LLV/HLV" />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
           </TabsContent>
         </Tabs>

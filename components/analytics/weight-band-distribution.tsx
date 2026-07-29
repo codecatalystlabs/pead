@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type Row = {
@@ -78,8 +78,7 @@ export function WeightBandDistribution({ showEligibility = false }: Props) {
           }}
           className="h-[280px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+          <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="band" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11 }} />
               <YAxis />
@@ -110,7 +109,6 @@ export function WeightBandDistribution({ showEligibility = false }: Props) {
                 </>
               )}
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div>

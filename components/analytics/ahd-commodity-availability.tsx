@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type Row = { item: string; available: number; unavailable: number; category: string }
@@ -44,8 +44,7 @@ export function AhdCommodityAvailability() {
           }}
           className="h-[280px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
+          <BarChart data={data} layout="vertical" margin={{ left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="item" width={160} tick={{ fontSize: 10 }} />
@@ -53,7 +52,6 @@ export function AhdCommodityAvailability() {
               <Bar dataKey="available" stackId="a" fill="hsl(var(--chart-1))" />
               <Bar dataKey="unavailable" stackId="a" fill="hsl(var(--chart-4))" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type Row = { line: string; number: number; availableSites: number }
@@ -50,15 +50,13 @@ export function RegimenLineStatus() {
               config={{ number: { label: "Patients", color: "hsl(var(--chart-2))" } }}
               className="h-[220px]"
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data}>
+              <BarChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="line" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="number" fill="hsl(var(--chart-2))" />
                 </BarChart>
-              </ResponsiveContainer>
             </ChartContainer>
             <div className="mt-3 space-y-1 text-xs">
               {data.map((r) => (

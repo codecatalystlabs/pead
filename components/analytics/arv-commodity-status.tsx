@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -69,8 +69,7 @@ export function ARVCommodityStatus() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+          <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="commodity" angle={-35} textAnchor="end" height={100} tick={{ fontSize: 10 }} />
               <YAxis />
@@ -78,7 +77,6 @@ export function ARVCommodityStatus() {
               <Bar dataKey="daysOfStockout" fill="hsl(var(--chart-4))" name="Avg days stock-out" />
               <Bar dataKey="availabilityPct" fill="hsl(var(--chart-1))" name="Sites with stock %" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-4 space-y-2">
           {data.map((item) => (

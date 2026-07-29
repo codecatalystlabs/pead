@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 /** Section B: CALHIV in care by age band (Overview). */
@@ -54,15 +54,13 @@ export function AgeBandDistribution() {
           config={{ inCare: { label: "In care", color: "hsl(var(--chart-1))" } }}
           className="h-[240px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+          <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="age" tick={{ fontSize: 11 }} />
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="inCare" fill="hsl(var(--chart-1))" name="In care" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>

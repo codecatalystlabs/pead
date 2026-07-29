@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -39,8 +39,7 @@ export function SupportServices() {
           }}
           className="h-[200px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={supportData}>
+          <BarChart data={supportData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="service" angle={-45} textAnchor="end" height={80} tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 12 }} />
@@ -49,7 +48,6 @@ export function SupportServices() {
               <Bar dataKey="enrolled" fill="hsl(var(--chart-1))" />
               <Bar dataKey="total" fill="hsl(var(--chart-2))" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-2 space-y-1">
           {supportData.map((item, idx) => {

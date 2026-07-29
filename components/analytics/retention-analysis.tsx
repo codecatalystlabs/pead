@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -43,8 +43,7 @@ export function RetentionAnalysis() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical" margin={{ left: 100 }}>
+          <BarChart data={chartData} layout="vertical" margin={{ left: 100 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis type="category" dataKey="cohort" />
@@ -54,7 +53,6 @@ export function RetentionAnalysis() {
               <Bar dataKey="dead" fill="hsl(var(--chart-3))" />
               <Bar dataKey="transferred" fill="hsl(var(--chart-5))" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>

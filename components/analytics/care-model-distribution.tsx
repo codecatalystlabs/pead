@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts"
+import { PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))"]
@@ -51,8 +51,7 @@ export function CareModelDistribution() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+          <PieChart>
               <Pie
                 data={data}
                 cx="50%"
@@ -79,7 +78,6 @@ export function CareModelDistribution() {
                 }
               />
             </PieChart>
-          </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-4 space-y-2">
           {data.map((item, idx) => (

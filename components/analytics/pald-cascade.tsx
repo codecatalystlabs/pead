@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type CascadeRow = { stage: string; value: number }
@@ -68,8 +68,7 @@ export function PaldCascade() {
             config={{ value: { label: "Patients", color: "hsl(var(--chart-1))" } }}
             className="h-[260px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rows}>
+            <BarChart data={rows}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="stage" interval={0} angle={-20} textAnchor="end" height={70} tick={{ fontSize: 11 }} />
                 <YAxis />
@@ -77,7 +76,6 @@ export function PaldCascade() {
                 <Legend />
                 <Bar dataKey="value" name="Patients" fill="hsl(var(--chart-1))" />
               </BarChart>
-            </ResponsiveContainer>
           </ChartContainer>
         )}
       </CardContent>

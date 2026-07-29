@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function DSDMMD() {
@@ -47,15 +47,13 @@ export function DSDMMD() {
             }}
             className="h-[300px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mmdData}>
+            <BarChart data={mmdData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="number" fill="hsl(var(--chart-1))" />
               </BarChart>
-            </ResponsiveContainer>
           </ChartContainer>
           <div className="mt-4 space-y-2">
             {mmdData.map((item, idx) => (
@@ -87,8 +85,7 @@ export function DSDMMD() {
             }}
             className="h-[300px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+            <PieChart>
                 <Pie
                   data={dsdData}
                   cx="50%"
@@ -105,7 +102,6 @@ export function DSDMMD() {
                 </Pie>
                 <ChartTooltip content={<ChartTooltipContent />} />
               </PieChart>
-            </ResponsiveContainer>
           </ChartContainer>
           <div className="mt-4 space-y-2">
             {dsdData.map((item, idx) => (
@@ -136,8 +132,7 @@ export function DSDMMD() {
             }}
             className="h-[250px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={supportData}>
+            <BarChart data={supportData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="service" angle={-45} textAnchor="end" height={100} />
                 <YAxis />
@@ -146,7 +141,6 @@ export function DSDMMD() {
                 <Bar dataKey="enrolled" fill="hsl(var(--chart-1))" />
                 <Bar dataKey="total" fill="hsl(var(--chart-2))" />
               </BarChart>
-            </ResponsiveContainer>
           </ChartContainer>
           <div className="mt-4 space-y-2">
             {supportData.map((item, idx) => {

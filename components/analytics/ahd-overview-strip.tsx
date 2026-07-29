@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 type PopMetrics = { identified: number; cd4Below200: number }
@@ -98,8 +98,7 @@ export function AhdOverviewStrip() {
             }}
             className="h-[220px]"
           >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
+            <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="group" />
                 <YAxis />
@@ -108,7 +107,6 @@ export function AhdOverviewStrip() {
                 <Bar dataKey="screened" fill="hsl(var(--chart-1))" name="Screened / identified" />
                 <Bar dataKey="cd4Below200" fill="hsl(var(--chart-4))" name="CD4 below 200" />
               </BarChart>
-            </ResponsiveContainer>
           </ChartContainer>
         )}
       </CardContent>

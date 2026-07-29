@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 export function TransitionTrends() {
@@ -27,7 +27,7 @@ export function TransitionTrends() {
   if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No trend data</p></CardContent></Card>
 
   return (
-    <Card>
+    <Card className="min-w-0">
       <CardHeader>
         <CardTitle>pALD Transition Trends</CardTitle>
         <CardDescription>
@@ -42,38 +42,29 @@ export function TransitionTrends() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value) => {
-                      const pct = Number(value)
-                      return `pALD: ${pct}% · non-pALD: ${100 - pct}% (of period total)`
-                    }}
-                  />
-                }
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="pALD"
-                stroke="hsl(var(--chart-1))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-1))" }}
-              />
-              <Line
-                type="monotone"
-                dataKey="nonPALD"
-                stroke="hsl(var(--chart-4))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-4))" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          <LineChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 100]} width={40} tick={{ fontSize: 11 }} />
+            <ChartTooltip content={<ChartTooltipContent />} />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="pALD"
+              name="pALD %"
+              stroke="hsl(var(--chart-1))"
+              strokeWidth={2}
+              dot={{ fill: "hsl(var(--chart-1))" }}
+            />
+            <Line
+              type="monotone"
+              dataKey="nonPALD"
+              name="Non-pALD %"
+              stroke="hsl(var(--chart-4))"
+              strokeWidth={2}
+              dot={{ fill: "hsl(var(--chart-4))" }}
+            />
+          </LineChart>
         </ChartContainer>
       </CardContent>
     </Card>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -56,8 +56,7 @@ export function CapacityMetrics() {
           }}
           className="h-[300px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+          <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="cadre" angle={-45} textAnchor="end" height={80} />
               <YAxis />
@@ -66,7 +65,6 @@ export function CapacityMetrics() {
               <Bar dataKey="trained" fill="hsl(var(--chart-1))" />
               <Bar dataKey="total" fill="hsl(var(--chart-2))" />
             </BarChart>
-          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
       {capacityBuilding.length > 0 && (

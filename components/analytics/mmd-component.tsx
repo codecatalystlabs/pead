@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 
@@ -79,8 +79,7 @@ export function MMDComponent({ overviewMode = false }: Props) {
           }}
           className="h-[220px]"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            {overviewMode && overviewBars ? (
+          {overviewMode && overviewBars ? (
               <BarChart data={overviewBars}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
@@ -99,7 +98,6 @@ export function MMDComponent({ overviewMode = false }: Props) {
                 <Bar dataKey="mmd6" stackId="a" fill="hsl(var(--chart-3))" name="6 months" />
               </BarChart>
             )}
-          </ResponsiveContainer>
         </ChartContainer>
         {!overviewMode && (
           <div className="mt-2 space-y-1">

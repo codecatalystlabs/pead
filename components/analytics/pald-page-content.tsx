@@ -23,10 +23,9 @@ export function PaldPageContent() {
       <DashboardNav />
       <DashboardFilterBar />
       <PaldCascade />
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-        <PALDTransitionDetails />
-        <TransitionTrends />
-      </div>
+      {/* Weight + age side by side; trends full width below — avoids nested grids that overflow */}
+      <PALDTransitionDetails />
+      <TransitionTrends />
       <WeightBandDistribution showEligibility />
       <RegimenLineStatus />
       <ARVCommodityStatus />
