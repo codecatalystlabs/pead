@@ -3,12 +3,23 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-export function ViralLoadIndicators() {
+type Props = { summaryMode?: boolean }
+
+type Row = {
+  ageGroup: string
+  inCare: number
+  updated: number
+  suppressed: number
+  coveragePct: number
+  suppressedPct: number
+}
+
+export function ViralLoadIndicators({ summaryMode = false }: Props) {
   const { queryString, filters } = useDashboardFilters()
-  const [data, setData] = useState<{ ageGroup: string; suppressedPct: number; dtgPct: number; suppressed: number; updated: number }[]>([])
+  const [data, setData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -17,63 +28,91 @@ export function ViralLoadIndicators() {
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
       .then((json) => {
         if (!isMounted) return
-        setData((json.data ?? []).map((r: { ageGroup: string; suppressedPct: number; dtgPct: number; suppressed: number; updated: number }) => ({ ageGroup: r.ageGroup, suppressedPct: r.suppressedPct, dtgPct: r.dtgPct, suppressed: r.suppressed, updated: r.updated })))
+        setData(json.data ?? [])
       })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
-    return () => { isMounted = false }
+    return () => {
+      isMounted = false
+    }
   }, [queryString])
 
-  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
-  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No viral load data</p></CardContent></Card>
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-red-600">{error}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+  if (!data.length) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">No viral load data</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const absolute = summaryMode || filters.metricView === "absolute"
 
   return (
-    <Card>
+    <Card className={summaryMode ? "!bg-blue-50/50 dark:!bg-blue-950/20" : undefined}>
       <CardHeader>
         <CardTitle>Viral Load Coverage and Suppression</CardTitle>
-        <CardDescription>How viral load suppression is improving across age bands, with DTG coverage context.</CardDescription>
+        <CardDescription>
+          {summaryMode
+            ? "Updated viral load tests and suppressed results by age band"
+            : absolute
+              ? "Numerator: virally suppressed · Denominator: CALHIV with an updated viral load — by age band"
+              : "Coverage % = updated viral load / in care · Suppression % = suppressed / updated viral load"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={{
-            suppressedPct: { label: filters.metricView === "absolute" ? "VL Suppressed (n)" : "VL Suppressed %", color: "hsl(var(--chart-1))" },
-            dtgPct: { label: "On DTG-based regimen %", color: "hsl(var(--chart-2))" },
+            updated: { label: "Updated viral load", color: "hsl(var(--chart-1))" },
+            suppressed: { label: "Virally suppressed", color: "hsl(var(--chart-3))" },
+            coveragePct: { label: "Coverage %", color: "hsl(var(--chart-1))" },
+            suppressedPct: { label: "Suppression %", color: "hsl(var(--chart-3))" },
           }}
           className="h-[300px]"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="ageGroup" angle={-45} textAnchor="end" height={80} />
-              <YAxis domain={filters.metricView === "absolute" ? undefined : [0, 100]} />
+              <XAxis dataKey="ageGroup" angle={-20} textAnchor="end" height={60} />
+              <YAxis domain={absolute ? undefined : [0, 100]} />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
-                    formatter={(value, name, _item, _index, row) => {
-                      const r = row as { updated?: number; suppressed?: number }
-                      if (name === "VL Suppressed %" && r?.updated) return `${r.suppressed ?? value} / ${r.updated} (${value}%)`
-                      return `${value}%`
+                    formatter={(value, name, item) => {
+                      const r = (item?.payload ?? {}) as Partial<Row>
+                      if (name === "Suppression %" || name === "suppressedPct") {
+                        return `${r?.suppressed ?? 0} / ${r?.updated ?? 0} (${value}%)`
+                      }
+                      if (name === "Coverage %" || name === "coveragePct") {
+                        return `${r?.updated ?? 0} / ${r?.inCare ?? 0} (${value}%)`
+                      }
+                      return String(value)
                     }}
                   />
                 }
               />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey={filters.metricView === "absolute" ? "suppressed" : "suppressedPct"}
-                stroke="hsl(var(--chart-1))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-1))" }}
-              />
-              {filters.metricView === "percentage" && (
-                <Line
-                type="monotone"
-                dataKey="dtgPct"
-                stroke="hsl(var(--chart-2))"
-                strokeWidth={2}
-                dot={{ fill: "hsl(var(--chart-2))" }}
-                />
+              {absolute ? (
+                <>
+                  <Bar dataKey="updated" name="Updated viral load" fill="hsl(var(--chart-1))" />
+                  <Bar dataKey="suppressed" name="Virally suppressed" fill="hsl(var(--chart-3))" />
+                </>
+              ) : (
+                <>
+                  <Bar dataKey="coveragePct" name="Coverage %" fill="hsl(var(--chart-1))" />
+                  <Bar dataKey="suppressedPct" name="Suppression %" fill="hsl(var(--chart-3))" />
+                </>
               )}
-            </LineChart>
+            </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
       </CardContent>

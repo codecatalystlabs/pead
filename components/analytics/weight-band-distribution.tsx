@@ -3,11 +3,21 @@
 import { useEffect, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-export function WeightBandDistribution() {
-  const [data, setData] = useState<{ band: string; clhiv: number; alhiv: number }[]>([])
+type Row = {
+  band: string
+  clhiv: number
+  alhiv: number
+  eligible?: number
+  transitioned?: number
+}
+
+type Props = { showEligibility?: boolean }
+
+export function WeightBandDistribution({ showEligibility = false }: Props) {
+  const [data, setData] = useState<Row[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const { queryString } = useDashboardFilters()
@@ -20,70 +30,111 @@ export function WeightBandDistribution() {
         setData(json.weightBandData ?? [])
       })
       .catch((err) => isMounted && setError(err?.message ?? "Failed to load"))
-    return () => { isMounted = false }
+    return () => {
+      isMounted = false
+    }
   }, [queryString])
 
-  if (error) return <Card><CardContent className="pt-6"><p className="text-sm text-red-600">{error}</p></CardContent></Card>
-  if (!data.length) return <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">No weight band data</p></CardContent></Card>
+  if (error) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-red-600">{error}</p>
+        </CardContent>
+      </Card>
+    )
+  }
+  if (!data.length) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">No weight band data</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>CALHIV Distribution by Weight Band</CardTitle>
-        <CardDescription>Number of CALHIV receiving care by weight band</CardDescription>
+        <CardTitle>
+          {showEligibility
+            ? "Eligibility and Transition to pALD by Weight Band"
+            : "CALHIV Distribution by Weight Band"}
+        </CardTitle>
+        <CardDescription>
+          {showEligibility
+            ? "Numerator: transitioned to pALD · Denominator: eligible for pALD — plus Children Living with HIV (CLHIV) and Adolescents Living with HIV (ALHIV) in care"
+            : "Children Living with HIV (CLHIV, typically &lt;20 kg) and Adolescents Living with HIV (ALHIV, typically ≥20 kg) receiving care by weight band"}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
           config={{
-            clhiv: { label: "CLHIV", color: "hsl(var(--chart-1))" },
-            alhiv: { label: "ALHIV", color: "hsl(var(--chart-2))" },
+            clhiv: { label: "Children Living with HIV (CLHIV)", color: "hsl(var(--chart-1))" },
+            alhiv: { label: "Adolescents Living with HIV (ALHIV)", color: "hsl(var(--chart-2))" },
+            eligible: { label: "Eligible for pALD", color: "hsl(var(--chart-3))" },
+            transitioned: { label: "On pALD", color: "hsl(var(--chart-4))" },
           }}
-          className="h-[250px]"
+          className="h-[280px]"
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="band" angle={-45} textAnchor="end" height={100} />
+              <XAxis dataKey="band" angle={-45} textAnchor="end" height={100} tick={{ fontSize: 11 }} />
               <YAxis />
               <ChartTooltip
-              content={
-                <ChartTooltipContent
-                  formatter={(value, name, _item, _index, row) => {
-                    const r = row as { clhiv?: number; alhiv?: number }
-                    const total = (r?.clhiv ?? 0) + (r?.alhiv ?? 0)
-                    return `${Number(value).toLocaleString()} / ${total > 0 ? total.toLocaleString() : "—"} (${name})`
-                  }}
-                />
-              }
-            />
-              <Bar dataKey="clhiv" fill="hsl(var(--chart-1))" />
-              <Bar dataKey="alhiv" fill="hsl(var(--chart-2))" />
+                content={
+                  <ChartTooltipContent
+                    formatter={(value, name, item) => {
+                      const r = (item?.payload ?? {}) as Partial<Row>
+                      const total = (r?.clhiv ?? 0) + (r?.alhiv ?? 0)
+                      if (name === "eligible" || name === "Eligible for pALD") {
+                        return `${Number(value).toLocaleString()} eligible`
+                      }
+                      if (name === "transitioned" || name === "On pALD") {
+                        return `${Number(value).toLocaleString()} / ${r?.eligible ?? 0} eligible`
+                      }
+                      return `${Number(value).toLocaleString()} / ${total > 0 ? total.toLocaleString() : "—"} (${name})`
+                    }}
+                  />
+                }
+              />
+              <Legend />
+              <Bar dataKey="clhiv" fill="hsl(var(--chart-1))" name="CLHIV" stackId="care" />
+              <Bar dataKey="alhiv" fill="hsl(var(--chart-2))" name="ALHIV" stackId="care" />
+              {showEligibility && (
+                <>
+                  <Bar dataKey="eligible" fill="hsl(var(--chart-3))" name="Eligible" />
+                  <Bar dataKey="transitioned" fill="hsl(var(--chart-4))" name="On pALD" />
+                </>
+              )}
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div>
-            <h4 className="font-semibold mb-1 text-xs">CLHIV</h4>
+            <h4 className="font-semibold mb-1 text-xs">Children Living with HIV (CLHIV)</h4>
             <div className="space-y-0.5">
               {data
                 .filter((item) => item.clhiv > 0)
-                .map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-xs">
+                .map((item) => (
+                  <div key={item.band} className="flex justify-between text-xs">
                     <span className="truncate">{item.band}</span>
-                    <span className="font-medium ml-1">{item.clhiv}</span>
+                    <span className="font-medium ml-1">{item.clhiv.toLocaleString()}</span>
                   </div>
                 ))}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold mb-1 text-xs">ALHIV</h4>
+            <h4 className="font-semibold mb-1 text-xs">Adolescents Living with HIV (ALHIV)</h4>
             <div className="space-y-0.5">
               {data
                 .filter((item) => item.alhiv > 0)
-                .map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-xs">
+                .map((item) => (
+                  <div key={item.band} className="flex justify-between text-xs">
                     <span className="truncate">{item.band}</span>
-                    <span className="font-medium ml-1">{item.alhiv}</span>
+                    <span className="font-medium ml-1">{item.alhiv.toLocaleString()}</span>
                   </div>
                 ))}
             </div>
@@ -93,4 +144,3 @@ export function WeightBandDistribution() {
     </Card>
   )
 }
-

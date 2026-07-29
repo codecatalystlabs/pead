@@ -1,53 +1,35 @@
 "use client"
 
-import Link from "next/link"
-import { SummaryCards } from "./summary-cards"
-import { CareModelDistribution } from "./care-model-distribution"
-import { TransitionTrends } from "./transition-trends"
-import { PALDTransitionDetails } from "./pald-transition-details"
-import { WeightBandDistribution } from "./weight-band-distribution"
 import { DashboardNav } from "./dashboard-nav"
 import { DashboardFilterBar } from "./dashboard-filter-bar"
-import { PALDDataContext } from "./pald-data-context"
+import { PALDTransitionDetails } from "./pald-transition-details"
+import { TransitionTrends } from "./transition-trends"
+import { WeightBandDistribution } from "./weight-band-distribution"
+import { ARVCommodityStatus } from "./arv-commodity-status"
+import { RegimenLineStatus } from "./regimen-line-status"
+import { PaldCascade } from "./pald-cascade"
 
-export default function PALDPageContent() {
+export function PaldPageContent() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full min-w-0">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-            pALD &amp; CALHIV Overview
-          </h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-            Pediatric and adolescent HIV integration: CALHIV in care, pALD transition, weight bands, and care models.
-          </p>
-          <div className="mt-2">
-            <Link
-              href="/dashboard-analytics/overview"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline"
-            >
-              View dashboard guide and indicator explanations
-            </Link>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+          pALD, ARV Line and Commodity Availability
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          pALD transition by age and weight, first/second/third-line regimens, and commodity stock-out days.
+        </p>
       </div>
-
       <DashboardNav />
-
       <DashboardFilterBar />
-
-      <PALDDataContext />
-
-      <SummaryCards />
-
+      <PaldCascade />
       <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-        <CareModelDistribution />
+        <PALDTransitionDetails />
         <TransitionTrends />
       </div>
-
-      <PALDTransitionDetails />
-
-      <WeightBandDistribution />
+      <WeightBandDistribution showEligibility />
+      <RegimenLineStatus />
+      <ARVCommodityStatus />
     </div>
   )
 }

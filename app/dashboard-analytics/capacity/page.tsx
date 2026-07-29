@@ -1,16 +1,6 @@
-import type { Metadata } from "next"
-import Layout from "@/components/cmsfullform/layout"
-import { CapacityPageContent } from "@/components/analytics/capacity-page-content"
+import { redirect } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Capacity & Retention | CALHIV Dashboard",
-  description: "Capacity building, staff training, retention with transfer in/out.",
-}
-
+/** Capacity & Retention was removed; content moved to Integration and Viral Load tabs. */
 export default function CapacityPage() {
-  return (
-    <Layout>
-      <CapacityPageContent />
-    </Layout>
-  )
+  redirect("/dashboard-analytics/integration")
 }

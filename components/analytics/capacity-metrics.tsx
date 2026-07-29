@@ -36,8 +36,10 @@ export function CapacityMetrics() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Staff Training Capacity</CardTitle>
-        <CardDescription>Health workers trained in integration by cadre</CardDescription>
+        <CardTitle>Staff Training Capacity by Cadre</CardTitle>
+        <CardDescription>
+          Health workers trained in service integration, disaggregated by cadre (administrative, counselling, medical/clinical, nursing, support)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {warnings.length > 0 && (

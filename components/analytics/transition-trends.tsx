@@ -30,7 +30,9 @@ export function TransitionTrends() {
     <Card>
       <CardHeader>
         <CardTitle>pALD Transition Trends</CardTitle>
-        <CardDescription>Percentage of CALHIV on pALD vs non-pALD formulations</CardDescription>
+        <CardDescription>
+          Share of patients on pALD versus non-pALD (ABC/3TC/DTG 120/60/10) by reporting quarter (Quarter 1–4)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

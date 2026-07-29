@@ -75,14 +75,18 @@ export const PALD_PATHS = {
     "15 - 19 years": [`${C}.eligibility_to_transition_to_pald_ageband.alhiv_who_are_eligible_to_transition_15_19yrs`],
   } satisfies Record<AgeBandKey, string[]>,
   weightBands: [
-    { band: "3 - 5.9 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_3_5_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_3_5_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_3_5_9kg` },
-    { band: "6 - 9.9 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_6_9_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_6_9_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_6_9_9kg` },
-    { band: "10 - 13.9 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_10_13_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_10_13_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_10_13_9kg` },
-    { band: "14 - 19.9 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_14_19_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_14_19_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_14_19_9kg` },
-    { band: "20 - 24.9 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.alhiv_recieving_care_20_24_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_20_24_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_20_24_9kg` },
-    { band: "≥25 kg", calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.above_30kg_alhiv_recieving_care`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_25_29_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_25_29_9kg` },
+    { band: "3 - 5.9 kg", group: "clhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_3_5_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_3_5_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_3_5_9kg` },
+    { band: "6 - 9.9 kg", group: "clhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_6_9_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_6_9_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_6_9_9kg` },
+    { band: "10 - 13.9 kg", group: "clhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_10_13_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_10_13_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_10_13_9kg` },
+    { band: "14 - 19.9 kg", group: "clhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.clhiv_recieving_care_14_19_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_14_19_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_14_19_9kg` },
+    { band: "20 - 24.9 kg", group: "alhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.alhiv_recieving_care_20_24_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_20_24_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_20_24_9kg` },
+    { band: "25 - 29.9 kg", group: "alhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.alhiv_recieving_care_25_29_9kg`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_25_29_9kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_25_29_9kg` },
+    // Form captures care counts for ≥30 kg; eligibility/transition fields stop at 20–24.9 kg in current ODK.
+    { band: "≥30 kg", group: "alhiv" as const, calhiv: `${B}.number_of_calhiv_receiving_care_at_this_hf_by_weight_band.above_30kg_alhiv_recieving_care`, eligible: `${C}.eligibility_to_transition_to_pald_weightband.eligible_to_transition_to_pald_above_30kg`, transitioned: `${C}.eligibile_and_transitioned_by_weight.transtioned_to_pald_above_30kg` },
   ],
   clinicDayPatients: [`${D}.clinic_day_model_calhiv_.number_registered_under_clinic_day_model`],
+  mixedOpdPatients: [`${D}.mixed_opd_care.number_registered_under_mixed_opd`],
+  otherModelPatients: [`${D}.other_care_models.number_of_other_care_models`],
   nonPaldByWeight: [
     `${C}.number_of_calhiv__on_abc_3tc_dtg_120_60_10_mg_by_weight_band.clhiv_taking_non_pald_formulation_3_5_9kg`,
     `${C}.number_of_calhiv__on_abc_3tc_dtg_120_60_10_mg_by_weight_band.clhiv_taking_non_pald_formulation_6_9_9kg`,
@@ -109,14 +113,14 @@ export function aggregatePaldFromFlat(flat: FlatLowerMap) {
       pct: inCare > 0 ? Math.round((onPald / inCare) * 1000) / 10 : 0,
     }
   })
-  const weightBandData = PALD_PATHS.weightBands.map(({ band, calhiv, eligible, transitioned }) => {
-    const clhiv = sumPaths(flat, [calhiv])
+  const weightBandData = PALD_PATHS.weightBands.map(({ band, group, calhiv, eligible, transitioned }) => {
+    const n = sumPaths(flat, [calhiv])
     const elig = sumPaths(flat, [eligible])
     const trans = sumPaths(flat, [transitioned])
     return {
       band,
-      clhiv,
-      alhiv: 0,
+      clhiv: group === "clhiv" ? n : 0,
+      alhiv: group === "alhiv" ? n : 0,
       eligible: elig,
       transitioned: trans,
       pct: elig > 0 ? Math.round((trans / elig) * 1000) / 10 : 0,
@@ -126,7 +130,19 @@ export function aggregatePaldFromFlat(flat: FlatLowerMap) {
   const paldEligible = ageBandData.reduce((s, r) => s + r.eligible, 0) || weightBandData.reduce((s, r) => s + r.eligible, 0)
   const nonPald = sumPaths(flat, PALD_PATHS.nonPaldByWeight)
   const clinicDay = sumPaths(flat, PALD_PATHS.clinicDayPatients)
-  return { totalCalhiv, ageBandData, weightBandData, paldOnPald, paldEligible, nonPald, clinicDay }
+  const mixedOpd = sumPaths(flat, PALD_PATHS.mixedOpdPatients)
+  const otherModels = sumPaths(flat, PALD_PATHS.otherModelPatients)
+  return { totalCalhiv, ageBandData, weightBandData, paldOnPald, paldEligible, nonPald, clinicDay, mixedOpd, otherModels }
+}
+
+/** Normalize ODK quarter labels to "Quarter 1"…"Quarter 4" (tool does not use Q2/26-style labels). */
+export function formatReportingQuarter(raw: string | number | null | undefined): string | null {
+  if (raw == null || raw === "") return null
+  const s = String(raw).trim()
+  const m = s.match(/(?:quarter|q)[_\s-]*([1-4])/i)
+  if (m) return `Quarter ${m[1]}`
+  if (/^[1-4]$/.test(s)) return `Quarter ${s}`
+  return s
 }
 
 // ---- Viral load (Section I) ----
@@ -202,51 +218,94 @@ export function llvPaths(metric: string, band: AgeBandKey): string[] {
 }
 
 // ---- AHD cascades (SectionG) ----
-export const AHD_PREFIX = {
-  newlyDiagnosed: `${G}.newly_diagnosed.number_diagnosed_newly_diagonised`,
+type PopKey = "newlyDiagnosed" | "unsuppressed" | "reEngaged"
+
+const POP_ROOT: Record<PopKey, string> = {
+  newlyDiagnosed: `${G}.newly_diagnosed.number_diagnosed`,
   unsuppressed: `${G}.number_non_supressed.number_unsuppressed`,
   reEngaged: `${G}.calhiv_re_engaed_in_care.number_re_engaged`,
-  cd4New: `${G}.newly_diagnosed.number_diagnosed_cd4_less_than_200`,
-  cd4Unsup: `${G}.number_non_supressed.number_unsuppressed_cd4_less_than_200`,
-  cd4Re: `${G}.calhiv_re_engaed_in_care.number_re_engaged_cd4_less_than_200`,
-  tbScreened: `${G}.newly_diagnosed.number_diagnosed_screened_for_malnutrition`,
-  tbPositive: `${G}.newly_diagnosed.number_diagnosed_tested_positive_with_tblam_n_genexpert`,
-  tbTreatment: `${G}.newly_diagnosed.number_diagnosed_started_on_tb_treatment`,
-  tbScreenedUnsup: `${G}.number_non_supressed.number_unsuppressed_screened_for_malnutrition`,
-  tbPositiveUnsup: `${G}.number_non_supressed.number_unsuppressed_tested_positive_with_tblam_n_genexpert`,
-  tbTreatmentUnsup: `${G}.number_non_supressed.number_unsuppressed_started_on_tb_treatment`,
-  cragScreened: `${G}.newly_diagnosed.number_diagnosed_recieved_serum_crag_test`,
-  cragPositive: `${G}.newly_diagnosed.number_diagnosed_positive_crag_test`,
-  cmTreatment: `${G}.newly_diagnosed.number_diagnosed_started_cm_treatment`,
-  cragScreenedUnsup: `${G}.number_non_supressed.number_unsuppressed_recieved_serum_crag_test`,
-  cragPositiveUnsup: `${G}.number_non_supressed.number_unsuppressed_positive_crag_test`,
-  cmTreatmentUnsup: `${G}.number_non_supressed.number_unsuppressed_started_cm_treatment`,
+}
+
+function popMetric(flat: FlatLowerMap, pop: PopKey, metricSuffix: string, band: AgeBandKey): number {
+  const sfx = AGE_SUFFIX[band]
+  const under5Alt = band === "0 - 4 years" ? ["under_5yrs", "below_5"] : []
+  const root = POP_ROOT[pop]
+  // TB treatment field has a typo for re-engaged: number_re_engagedstarted_on_Tb_treatment
+  const variants =
+    pop === "reEngaged" && metricSuffix === "started_on_tb_treatment"
+      ? [`${root}started_on_tb_treatment`, `${root}_started_on_tb_treatment`]
+      : [`${root}_${metricSuffix}`]
+  return variants.reduce((acc, prefix) => acc + sumPaths(flat, agePaths(prefix, sfx, under5Alt)), 0)
+}
+
+export function ahdPopulationForAge(flat: FlatLowerMap, pop: PopKey, band: AgeBandKey) {
+  const identified =
+    pop === "newlyDiagnosed"
+      ? popMetric(flat, pop, "newly_diagonised", band)
+      : popMetric(flat, pop, "", band) ||
+        (pop === "unsuppressed"
+          ? sumPaths(flat, agePaths(POP_ROOT.unsuppressed, AGE_SUFFIX[band], band === "0 - 4 years" ? ["under_5yrs"] : []))
+          : popMetric(flat, pop, "", band))
+
+  // Base counts for unsuppressed / re-engaged use age suffix directly on root
+  const base =
+    pop === "newlyDiagnosed"
+      ? popMetric(flat, pop, "newly_diagonised", band)
+      : sumPaths(
+          flat,
+          agePaths(POP_ROOT[pop], AGE_SUFFIX[band], band === "0 - 4 years" ? ["under_5yrs", "below_5"] : []),
+        )
+
+  return {
+    identified: base,
+    cd4Below200: popMetric(flat, pop, "cd4_less_than_200", band) + popMetric(flat, pop, "cd4_less_than_200_", band),
+    malScreened: popMetric(flat, pop, "screened_for_malnutrition", band),
+    malnourished: popMetric(flat, pop, "malnourished", band),
+    malIntervention: popMetric(flat, pop, "recieving_malnutrition_intervention", band),
+    tbTested: popMetric(flat, pop, "cd4_less_than_200_tested_for_tb", band),
+    tbPositive: popMetric(flat, pop, "tested_positive_with_tblam_n_genexpert", band),
+    tbTreatment: popMetric(flat, pop, "started_on_tb_treatment", band),
+    cragScreened: popMetric(flat, pop, "recieved_serum_crag_test", band),
+    cragPositive: popMetric(flat, pop, "positive_crag_test", band),
+    cmTreatment: popMetric(flat, pop, "started_cm_treatment", band),
+  }
 }
 
 export function ahdForAge(flat: FlatLowerMap, band: AgeBandKey) {
-  const sfx = AGE_SUFFIX[band]
-  const under5Alt = band === "0 - 4 years" ? ["under_5yrs", "below_5"] : []
-  const paths = (prefix: string) => agePaths(prefix, sfx, under5Alt)
-  const newlyDiagnosed = sumPaths(flat, paths(AHD_PREFIX.newlyDiagnosed))
-  const unsuppressed = sumPaths(flat, paths(AHD_PREFIX.unsuppressed))
-  const reEngaged = sumPaths(flat, paths(AHD_PREFIX.reEngaged))
-  const cd4 =
-    sumPaths(flat, paths(AHD_PREFIX.cd4New)) +
-    sumPaths(flat, paths(AHD_PREFIX.cd4Unsup)) +
-    sumPaths(flat, paths(AHD_PREFIX.cd4Re))
-  const tbScreened =
-    sumPaths(flat, paths(AHD_PREFIX.tbScreened)) + sumPaths(flat, paths(AHD_PREFIX.tbScreenedUnsup))
-  const tbPositive =
-    sumPaths(flat, paths(AHD_PREFIX.tbPositive)) + sumPaths(flat, paths(AHD_PREFIX.tbPositiveUnsup))
-  const tbTreatment =
-    sumPaths(flat, paths(AHD_PREFIX.tbTreatment)) + sumPaths(flat, paths(AHD_PREFIX.tbTreatmentUnsup))
-  const cragScreened =
-    sumPaths(flat, paths(AHD_PREFIX.cragScreened)) + sumPaths(flat, paths(AHD_PREFIX.cragScreenedUnsup))
-  const cragPositive =
-    sumPaths(flat, paths(AHD_PREFIX.cragPositive)) + sumPaths(flat, paths(AHD_PREFIX.cragPositiveUnsup))
-  const cmTreatment =
-    sumPaths(flat, paths(AHD_PREFIX.cmTreatment)) + sumPaths(flat, paths(AHD_PREFIX.cmTreatmentUnsup))
-  return { newlyDiagnosed, unsuppressed, reEngaged, cd4, tbScreened, tbPositive, tbTreatment, cragScreened, cragPositive, cmTreatment }
+  const newly = ahdPopulationForAge(flat, "newlyDiagnosed", band)
+  const unsup = ahdPopulationForAge(flat, "unsuppressed", band)
+  const reEng = ahdPopulationForAge(flat, "reEngaged", band)
+  return {
+    newlyDiagnosed: newly.identified,
+    unsuppressed: unsup.identified,
+    reEngaged: reEng.identified,
+    cd4: newly.cd4Below200 + unsup.cd4Below200 + reEng.cd4Below200,
+    tbScreened: newly.tbTested + unsup.tbTested + reEng.tbTested,
+    tbPositive: newly.tbPositive + unsup.tbPositive + reEng.tbPositive,
+    tbTreatment: newly.tbTreatment + unsup.tbTreatment + reEng.tbTreatment,
+    cragScreened: newly.cragScreened + unsup.cragScreened + reEng.cragScreened,
+    cragPositive: newly.cragPositive + unsup.cragPositive + reEng.cragPositive,
+    cmTreatment: newly.cmTreatment + unsup.cmTreatment + reEng.cmTreatment,
+    byPopulation: { newlyDiagnosed: newly, unsuppressed: unsup, reEngaged: reEng },
+  }
+}
+
+export const AHD_COMMODITY_PATHS = {
+  lab: [
+    { key: "Visitec supplies", path: `${G}.availability_of_commodities_for_ahd.lab_commodities_for_ahd.visitec_supplies` },
+    { key: "PIMA machines and reagents", path: `${G}.availability_of_commodities_for_ahd.lab_commodities_for_ahd.pima_machines_and_reagents` },
+    { key: "Serum CRAG supplies", path: `${G}.availability_of_commodities_for_ahd.lab_commodities_for_ahd.serum_crag_supplie` },
+    { key: "LP and CSF CRAG supplies", path: `${G}.availability_of_commodities_for_ahd.lab_commodities_for_ahd.lp_and_csf_crag_supplie` },
+  ],
+  drugs: [
+    { key: "TPT prophylaxis", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.tpt_prophylaxis` },
+    { key: "Fluconazole prophylaxis", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.fluconazole_prophylaxis` },
+    { key: "CTX prophylaxis", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.ctx_prophylaxis` },
+    { key: "Anti-TB drugs", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.anti_tb_drugs` },
+    { key: "5FC / liposomal amphotericin", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities._5fc_liposomal_amphotericin` },
+    { key: "RUTF", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.rutf` },
+    { key: "Dewormers", path: `${G}.availability_of_commodities_for_ahd.ahd_drug_related_commodities.dewormers` },
+  ],
 }
 
 // ---- Capacity / retention (Section D, C, E, H) ----
@@ -329,6 +388,8 @@ export const SYNC_COLUMN_ALIASES: Record<string, string[]> = {
   total_number_hw_at_site: CAPACITY_PATHS.staffEligible,
   number_hw_trained_integra: CAPACITY_PATHS.staffTrained,
   number_at_hf_clinic_day: PALD_PATHS.clinicDayPatients,
+  number_at_hf_mixed_opd: PALD_PATHS.mixedOpdPatients,
+  number_at_hf_other_models: PALD_PATHS.otherModelPatients,
   I_1_How_many_CALHIV_or_review_last_month: CAPACITY_PATHS.retentionExpected,
   I_1_1_Of_those_who_w_r_their_appointments: CAPACITY_PATHS.retentionKept,
   G_3_3_What_is_the_mo_tock_MOS_available: COMMODITY_PATHS.mosPALD,

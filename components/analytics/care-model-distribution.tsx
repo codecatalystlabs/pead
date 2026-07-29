@@ -38,7 +38,9 @@ export function CareModelDistribution() {
     <Card>
       <CardHeader>
         <CardTitle>Care Model Distribution</CardTitle>
-        <CardDescription>Share of patients in each care model at the facility. Not the same as Total CALHIV in care.</CardDescription>
+        <CardDescription>
+          Mixed Outpatient Department (OPD), Chronic Care/Clinic Day, and other models from Section D (patient counts registered under each model)
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

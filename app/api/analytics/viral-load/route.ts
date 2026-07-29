@@ -15,10 +15,9 @@ export async function GET(req: Request) {
   const where = buildWhereWithFilters(auth, req.url) as Record<string, unknown>
 
   const rows = await prisma.submission.findMany({ where, select: { data: true } })
-  const totals = Object.fromEntries(AGE_BAND_KEYS.map((b) => [b, { updated: 0, suppressed: 0 }])) as Record<
-    (typeof AGE_BAND_KEYS)[number],
-    { updated: number; suppressed: number }
-  >
+  const totals = Object.fromEntries(
+    AGE_BAND_KEYS.map((b) => [b, { inCare: 0, updated: 0, suppressed: 0 }]),
+  ) as Record<(typeof AGE_BAND_KEYS)[number], { inCare: number; updated: number; suppressed: number }>
 
   for (const row of rows) {
     const flat = flattenToLowerMap(row.data)
@@ -27,6 +26,7 @@ export async function GET(req: Request) {
       const cap = inCare > 0 ? inCare : Number.POSITIVE_INFINITY
       const updated = Math.min(cap, sumPaths(flat, VL_PATHS.updated[band]))
       const suppressed = Math.min(updated, sumPaths(flat, VL_PATHS.suppressed[band]))
+      totals[band].inCare += inCare
       totals[band].updated += updated
       totals[band].suppressed += suppressed
     }
@@ -38,16 +38,17 @@ export async function GET(req: Request) {
 
   const params = parseFilterParams(req.url)
   const data = filterRowsByAgeBand(
-    AGE_BAND_KEYS.map((ageGroup) => ({
-      ageGroup,
-      updated: totals[ageGroup].updated,
-      suppressed: totals[ageGroup].suppressed,
-      dtgPct: 0,
-      suppressedPct:
-        totals[ageGroup].updated > 0
-          ? Math.round((totals[ageGroup].suppressed / totals[ageGroup].updated) * 1000) / 10
-          : 0,
-    })),
+    AGE_BAND_KEYS.map((ageGroup) => {
+      const row = totals[ageGroup]
+      return {
+        ageGroup,
+        inCare: row.inCare,
+        updated: row.updated,
+        suppressed: row.suppressed,
+        coveragePct: row.inCare > 0 ? Math.round((row.updated / row.inCare) * 1000) / 10 : 0,
+        suppressedPct: row.updated > 0 ? Math.round((row.suppressed / row.updated) * 1000) / 10 : 0,
+      }
+    }),
     params.ageBand,
   )
 

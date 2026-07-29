@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
-import PALDPageContent from "@/components/analytics/pald-page-content"
+import OverviewPageContent from "@/components/analytics/overview-page-content"
 import Layout from "@/components/cmsfullform/layout"
 
 export const metadata: Metadata = {
-  title: "pALD & CALHIV Dashboard | Pediatric & Adolescent HIV Integration",
-  description: "pALD transition, CALHIV in care, weight bands, care models, and integration metrics.",
+  title: "Overview | Pediatric & Adolescent HIV Integration Dashboard",
+  description: "Key CALHIV, pALD, integration, viral load, AHD, and DSD/MMD indicators.",
 }
 
 export default function AnalyticsDashboardPage() {
   return (
     <Layout>
-      <PALDPageContent />
+      <OverviewPageContent />
     </Layout>
   )
 }
