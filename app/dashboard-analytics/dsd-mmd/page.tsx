@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
-import Layout from "@/components/cmsfullform/layout"
+import { AnalyticsSimLayout } from "@/components/analytics/sim/AnalyticsSimLayout"
 import { DsdMmdPageContent } from "@/components/analytics/dsd-mmd-page-content"
 
 export const metadata: Metadata = {
-  title: "DSD / MMD | CALHIV Dashboard",
-  description: "Differentiated Service Delivery models and Multi-Month Dispensing by age band.",
+  title: "DSD & MMD | Paediatric HIV",
+  description: "Multi-month dispensing and differentiated service delivery models.",
 }
 
 export default function DsdMmdPage() {
   return (
-    <Layout>
+    <AnalyticsSimLayout>
       <DsdMmdPageContent />
-    </Layout>
+    </AnalyticsSimLayout>
   )
 }

@@ -1,240 +1,229 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useDashboardFilters } from "@/contexts/DashboardFilterContext"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Check, ChevronsUpDown, RotateCcw } from "lucide-react"
-import { cn } from "@/lib/utils"
+
+type CascadeRow = { region: string; district: string; facility: string }
 
 interface FilterOptions {
   region: string[]
   district: string[]
   facility: string[]
   reportingPeriod: string[]
+  cascade: CascadeRow[]
 }
 
 export function DashboardFilterBar() {
   const { filters, setFilters, resetFilters } = useDashboardFilters()
-  const [options, setOptions] = useState<FilterOptions>({ region: [], district: [], facility: [], reportingPeriod: [] })
-  const [loading, setLoading] = useState(true)
-  const [openRegion, setOpenRegion] = useState(false)
-  const [permissions, setPermissions] = useState<{ canSync: boolean; canExport: boolean; canManageTeam: boolean } | null>(null)
+  const [options, setOptions] = useState<FilterOptions>({
+    region: [],
+    district: [],
+    facility: [],
+    reportingPeriod: [],
+    cascade: [],
+  })
+  const [permissions, setPermissions] = useState<{ canSync: boolean; canExport: boolean } | null>(null)
   const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
-    let isMounted = true
+    let alive = true
     fetch("/api/analytics/filter-options", { credentials: "include", cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
-        if (!isMounted) return
+        if (!alive) return
         setOptions({
           region: data.region ?? [],
           district: data.district ?? [],
           facility: data.facility ?? [],
           reportingPeriod: data.reportingPeriod ?? [],
+          cascade: data.cascade ?? [],
         })
       })
       .catch(() => {})
-      .finally(() => { if (isMounted) setLoading(false) })
-    return () => { isMounted = false }
-  }, [])
-
-  useEffect(() => {
-    let isMounted = true
-    fetch("/api/auth/me", { credentials: "include", cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => {
-        if (!isMounted) return
-        setPermissions(data.permissions ?? null)
-      })
-      .catch(() => {
-        if (!isMounted) return
-        setPermissions(null)
-      })
     return () => {
-      isMounted = false
+      alive = false
     }
   }, [])
 
-  const update = useCallback(
-    (key: keyof typeof filters, value: string) => {
-      setFilters({ [key]: value })
+  useEffect(() => {
+    let alive = true
+    fetch("/api/auth/me", { credentials: "include", cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => alive && setPermissions(data?.permissions ?? null))
+      .catch(() => alive && setPermissions(null))
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const cascade = options.cascade
+
+  const regionOptions = useMemo(() => {
+    if (cascade.length) {
+      return [...new Set(cascade.map((c) => c.region).filter(Boolean))].sort()
+    }
+    return options.region
+  }, [cascade, options.region])
+
+  const districtOptions = useMemo(() => {
+    if (!cascade.length) return options.district
+    if (!filters.region) return []
+    const rows = cascade.filter((c) => c.region === filters.region)
+    return [...new Set(rows.map((c) => c.district).filter(Boolean))].sort()
+  }, [cascade, filters.region, options.district])
+
+  const facilityOptions = useMemo(() => {
+    if (!cascade.length) return options.facility
+    if (!filters.region) return []
+    const rows = cascade.filter((c) => {
+      if (c.region !== filters.region) return false
+      if (filters.district && c.district !== filters.district) return false
+      return true
+    })
+    return [...new Set(rows.map((c) => c.facility).filter(Boolean))].sort()
+  }, [cascade, filters.region, filters.district, options.facility])
+
+  // Clear child filters when parent selection makes them invalid
+  useEffect(() => {
+    if (!cascade.length) return
+    const patch: Partial<typeof filters> = {}
+    if (!filters.region && (filters.district || filters.facility)) {
+      patch.district = ""
+      patch.facility = ""
+    } else if (filters.district && !districtOptions.includes(filters.district)) {
+      patch.district = ""
+      patch.facility = ""
+    } else if (filters.facility && !facilityOptions.includes(filters.facility)) {
+      patch.facility = ""
+    }
+    if (Object.keys(patch).length) setFilters(patch)
+  }, [
+    cascade.length,
+    districtOptions,
+    facilityOptions,
+    filters.region,
+    filters.district,
+    filters.facility,
+    setFilters,
+  ])
+
+  const onRegionChange = useCallback(
+    (region: string) => {
+      setFilters({ region, district: "", facility: "" })
     },
     [setFilters],
   )
 
-  if (loading) return null
+  const onDistrictChange = useCallback(
+    (district: string) => {
+      setFilters({ district, facility: "" })
+    },
+    [setFilters],
+  )
 
-  const query = new URLSearchParams()
-  if (filters.region) query.set("region", filters.region)
-  if (filters.district) query.set("district", filters.district)
-  if (filters.facility) query.set("facility", filters.facility)
-  if (filters.ageBand) query.set("ageBand", filters.ageBand)
-  if (filters.reportingPeriod) query.set("reportingPeriod", filters.reportingPeriod)
-  if (filters.dateFrom) query.set("dateFrom", filters.dateFrom)
-  if (filters.dateTo) query.set("dateTo", filters.dateTo)
+  const onFacilityChange = useCallback(
+    (facility: string) => {
+      setFilters({ facility })
+    },
+    [setFilters],
+  )
+
+  const update = useCallback(
+    (key: keyof typeof filters, value: string) => setFilters({ [key]: value }),
+    [setFilters],
+  )
 
   return (
-    <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 p-4 pl-6 overflow-x-auto">
-      <div className="flex flex-wrap items-end gap-4 justify-end min-w-0">
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">Region</Label>
-          <Popover open={openRegion} onOpenChange={setOpenRegion}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={openRegion}
-                className="h-8 w-[170px] justify-between text-xs font-normal"
-              >
-                {filters.region || "All"}
-                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[220px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search region..." />
-                <CommandList>
-                  <CommandEmpty>No region found.</CommandEmpty>
-                  <CommandGroup>
-                    <CommandItem
-                      value="All"
-                      onSelect={() => {
-                        update("region", "")
-                        setOpenRegion(false)
-                      }}
-                    >
-                      <Check className={cn("mr-2 h-3 w-3", !filters.region ? "opacity-100" : "opacity-0")} />
-                      All
-                    </CommandItem>
-                    {options.region.map((r) => (
-                      <CommandItem
-                        key={r}
-                        value={r}
-                        onSelect={() => {
-                          update("region", r)
-                          setOpenRegion(false)
-                        }}
-                      >
-                        <Check className={cn("mr-2 h-3 w-3", filters.region === r ? "opacity-100" : "opacity-0")} />
-                        {r}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">District</Label>
-          <Select value={filters.district || "all"} onValueChange={(v) => update("district", v === "all" ? "" : v)}>
-            <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">All</SelectItem>
-              {options.district.map((d) => (
-                <SelectItem key={d} value={d} className="text-xs">{d}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">Facility</Label>
-          <Select value={filters.facility || "all"} onValueChange={(v) => update("facility", v === "all" ? "" : v)}>
-            <SelectTrigger className="w-[160px] h-8 text-xs">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">All</SelectItem>
-              {options.facility.map((f) => (
-                <SelectItem key={f} value={f} className="text-xs">{f}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">Age band</Label>
-          <Select value={filters.ageBand || "all"} onValueChange={(v) => update("ageBand", v === "all" ? "" : v)}>
-            <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">All</SelectItem>
-              <SelectItem value="0-4" className="text-xs">0-4</SelectItem>
-              <SelectItem value="5-9" className="text-xs">5-9</SelectItem>
-              <SelectItem value="10-14" className="text-xs">10-14</SelectItem>
-              <SelectItem value="15-19" className="text-xs">15-19</SelectItem>
-              <SelectItem value="20-24" className="text-xs">20-24</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">Period</Label>
-          <Select value={filters.reportingPeriod || "all"} onValueChange={(v) => update("reportingPeriod", v === "all" ? "" : v)}>
-            <SelectTrigger className="w-[140px] h-8 text-xs">
-              <SelectValue placeholder="All" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all" className="text-xs">All</SelectItem>
-              {options.reportingPeriod.map((p) => (
-                <SelectItem key={p} value={p} className="text-xs">{p}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">From</Label>
-          <Input
-            type="date"
-            className="h-8 w-[130px] text-xs"
-            value={filters.dateFrom}
-            onChange={(e) => update("dateFrom", e.target.value)}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Label className="text-xs whitespace-nowrap">To</Label>
-          <Input
-            type="date"
-            className="h-8 w-[130px] text-xs"
-            value={filters.dateTo}
-            onChange={(e) => update("dateTo", e.target.value)}
-          />
-        </div>
-        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={resetFilters}>
-          <RotateCcw className="h-3 w-3 mr-1" />
-          Reset
-        </Button>
-        <Select
-          value={filters.metricView}
-          onValueChange={(v) => update("metricView", v === "absolute" ? "absolute" : "percentage")}
+    <div className="sim-filters">
+      <label>
+        Region
+        <select value={filters.region} onChange={(e) => onRegionChange(e.target.value)}>
+          <option value="">All</option>
+          {regionOptions.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        District
+        <select
+          value={filters.district}
+          onChange={(e) => onDistrictChange(e.target.value)}
+          disabled={!filters.region}
+          title={filters.region ? "Districts in the selected region" : "Select a region first"}
         >
-          <SelectTrigger className="h-8 w-[150px] text-xs">
-            <SelectValue placeholder="Metric view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="percentage" className="text-xs">View: Percentage</SelectItem>
-            <SelectItem value="absolute" className="text-xs">View: Absolute</SelectItem>
-          </SelectContent>
-        </Select>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs"
+          <option value="">{filters.region ? "All districts in region" : "Select region first"}</option>
+          {districtOptions.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Facility
+        <select
+          value={filters.facility}
+          onChange={(e) => onFacilityChange(e.target.value)}
+          disabled={!filters.region}
+          title={
+            !filters.region
+              ? "Select a region first"
+              : filters.district
+                ? "Facilities in the selected district"
+                : "Facilities in the selected region (or pick a district to narrow)"
+          }
+        >
+          <option value="">
+            {!filters.region
+              ? "Select region first"
+              : filters.district
+                ? "All facilities in district"
+                : "All facilities in region"}
+          </option>
+          {facilityOptions.map((f) => (
+            <option key={f} value={f}>
+              {f}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Age band
+        <select value={filters.ageBand} onChange={(e) => update("ageBand", e.target.value)}>
+          <option value="">All</option>
+          <option value="0-4">0–4</option>
+          <option value="5-9">5–9</option>
+          <option value="10-14">10–14</option>
+          <option value="15-19">15–19</option>
+        </select>
+      </label>
+      <label>
+        Period
+        <select value={filters.reportingPeriod} onChange={(e) => update("reportingPeriod", e.target.value)}>
+          <option value="">All</option>
+          {options.reportingPeriod.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </label>
+      <span style={{ flex: 1 }} />
+      <span>
+        Cascade: region → district → facility
+      </span>
+      <button type="button" className="f" onClick={resetFilters}>
+        Reset
+      </button>
+      {permissions?.canSync ? (
+        <button
+          type="button"
+          className="f"
+          disabled={syncing}
           onClick={async () => {
-            if (!permissions?.canSync || syncing) return
             setSyncing(true)
             try {
               await fetch("/api/sync", { method: "POST", credentials: "include" })
@@ -243,51 +232,10 @@ export function DashboardFilterBar() {
               setSyncing(false)
             }
           }}
-          disabled={!permissions?.canSync || syncing}
-          title={permissions?.canSync ? "Run ODK sync and refresh dashboard" : "Only admin/editor can sync"}
         >
-          {syncing ? "Syncing..." : "Sync / Refresh"}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 text-xs"
-          onClick={async () => {
-            const res = await fetch(`/api/analytics/summary?${query.toString()}`, { credentials: "include", cache: "no-store" })
-            if (!res.ok) return
-            const data = await res.json()
-            const rows = [
-              ["Metric", "Value"],
-              ["Total CALHIV", String(data.totalCalhiv ?? 0)],
-              ["Care Integration %", String(data.careIntegrationRate ?? 0)],
-              ["pALD Transition %", String(data.paldTransitionRate ?? 0)],
-              ["VL Suppression %", String(data.vlSuppressionRate ?? 0)],
-              ["Staff Training %", String(data.staffTrainingCoverage ?? 0)],
-            ]
-            const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n")
-            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement("a")
-            a.href = url
-            a.download = "dashboard-summary.csv"
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-            URL.revokeObjectURL(url)
-          }}
-          disabled={permissions ? !permissions.canExport : false}
-        >
-          Export CSV
-        </Button>
-        <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.print()}>
-          Export PDF
-        </Button>
-        {permissions?.canManageTeam && (
-          <Button variant="outline" size="sm" className="h-8 text-xs">
-            Team admin
-          </Button>
-        )}
-      </div>
+          {syncing ? "Syncing…" : "Sync"}
+        </button>
+      ) : null}
     </div>
   )
 }

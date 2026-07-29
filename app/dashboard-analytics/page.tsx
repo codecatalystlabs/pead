@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
 import OverviewPageContent from "@/components/analytics/overview-page-content"
-import Layout from "@/components/cmsfullform/layout"
+import { AnalyticsSimLayout } from "@/components/analytics/sim/AnalyticsSimLayout"
 
 export const metadata: Metadata = {
-  title: "Overview | Pediatric & Adolescent HIV Integration Dashboard",
-  description: "Key CALHIV, pALD, integration, viral load, AHD, and DSD/MMD indicators.",
+  title: "Overview | Paediatric & Adolescent HIV Integration",
+  description: "Programme at a glance — CALHIV, viral load, pALD, retention.",
 }
 
 export default function AnalyticsDashboardPage() {
   return (
-    <Layout>
+    <AnalyticsSimLayout>
       <OverviewPageContent />
-    </Layout>
+    </AnalyticsSimLayout>
   )
 }

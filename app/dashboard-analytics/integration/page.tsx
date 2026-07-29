@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
-import Layout from "@/components/cmsfullform/layout"
+import { AnalyticsSimLayout } from "@/components/analytics/sim/AnalyticsSimLayout"
 import { IntegrationPageContent } from "@/components/analytics/integration-page-content"
 
 export const metadata: Metadata = {
-  title: "Integration & Capacity Building | CALHIV Dashboard",
-  description: "Care models, integration status, and staff training by cadre.",
+  title: "Integration & capacity | Paediatric HIV",
+  description: "Care models, services integrated, and capacity building by cadre.",
 }
 
 export default function IntegrationPage() {
   return (
-    <Layout>
+    <AnalyticsSimLayout>
       <IntegrationPageContent />
-    </Layout>
+    </AnalyticsSimLayout>
   )
 }

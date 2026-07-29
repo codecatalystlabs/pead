@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
-import Layout from "@/components/cmsfullform/layout"
+import { AnalyticsSimLayout } from "@/components/analytics/sim/AnalyticsSimLayout"
 import { ViralLoadPageContent } from "@/components/analytics/viral-load-page-content"
 
 export const metadata: Metadata = {
-  title: "Viral Load & IAC/LLV | CALHIV Dashboard",
-  description: "Viral load coverage and suppression, HLV & IAC cascade, LLV follow-up.",
+  title: "Retention, viral load & viraemia | Paediatric HIV",
+  description: "Retention, viral load coverage/suppression, HLV and LLV pathways.",
 }
 
 export default function ViralLoadPage() {
   return (
-    <Layout>
+    <AnalyticsSimLayout>
       <ViralLoadPageContent />
-    </Layout>
+    </AnalyticsSimLayout>
   )
 }

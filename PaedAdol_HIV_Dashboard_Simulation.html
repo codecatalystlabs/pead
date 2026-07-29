@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paediatric &amp; Adolescent HIV Dashboard — Simulation</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{--ink:#1A1A1A;--soft:#4a5a68;--mut:#7A6F60;--line:#E2D6C6;--bg:#F4ECE2;--card:#fff;
+    --teal:#1E5B73;--tealD:#123F52;--gold:#E0A900;--red:#C0291A;--good:#1f8a5b;--warn:#b85c00;--mist:#F1E7DA;--tint:#FAF5EE}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px}
+  .flagband{height:8px;display:flex}.flagband i{flex:1}
+  header.top{background:var(--ink);color:#fff;padding:16px 0}
+  header.top .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+  header.top h1{font-size:18px;margin:0;font-weight:650}.header .sub{font-size:12px;color:#c9bfa9}
+  header.top .sub{font-size:12px;color:#c9bfa9}
+  .pill{font-size:11px;background:#ffffff22;border:1px solid #ffffff3a;padding:3px 9px;border-radius:999px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin:16px 0;font-size:12px;color:var(--mut)}
+  .filters .f{border:1px solid var(--line);border-radius:7px;padding:5px 9px;color:var(--soft);background:var(--tint)}
+  nav{display:flex;gap:2px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:4px}
+  .tab{border:0;background:none;font:inherit;cursor:pointer;padding:12px 13px;color:var(--soft);font-size:13px;font-weight:600;white-space:nowrap;border-bottom:3px solid transparent}
+  .tab[aria-selected=true]{color:var(--teal);border-bottom-color:var(--teal)}
+  .panel{display:none}.panel.active{display:block}
+  h2.sec{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--tealD);font-weight:700;border-left:3px solid var(--teal);padding-left:8px;margin:22px 0 12px}
+  .grid{display:grid;gap:14px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+  .card h3{margin:0 0 2px;font-size:15px;font-weight:650}.card .d{margin:0 0 10px;font-size:12px;color:var(--mut)}
+  .kpi .l{font-size:12px;color:var(--mut)}.kpi .v{font-size:26px;font-weight:680;margin-top:2px}
+  .kpi .v.good{color:var(--good)}.kpi .v.warn{color:var(--warn)}.kpi .f{font-size:11px;color:var(--soft);margin-top:3px}
+  .box{position:relative;height:210px}
+  .lg{display:flex;flex-wrap:wrap;gap:12px;font-size:11.5px;color:var(--soft);margin-bottom:6px}
+  .lg span{display:flex;align-items:center;gap:5px}.lg i{width:10px;height:10px;border-radius:2px}
+  /* cascade with per-step gap */
+  .cscrow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .step{border-radius:7px;color:#fff;padding:8px 11px;font-size:12px;display:flex;justify-content:space-between;min-width:150px;flex-shrink:0}
+  .step b{font-weight:680}
+  .gapchip{font-size:11px;padding:5px 8px;border-radius:6px;white-space:nowrap}
+  .gap-ok{background:#e0f0e7;color:#155} .gap-warn{background:#fbecd9;color:#7a4400}
+  .gap-bad{background:#f8e1de;color:#8a1f16;border:1px dashed #C0291A;font-weight:600}
+  .note{font-size:11.5px;color:var(--soft);background:var(--tint);border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-top:10px;line-height:1.5}
+  .warnflag{background:#fbecd9;border-color:#e7c79a;color:#7a4400}
+  .ctrls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .tg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .tg button{border:0;background:#fff;font:inherit;font-size:12px;padding:6px 11px;cursor:pointer;color:var(--soft)}
+  .tg button[aria-pressed=true]{background:var(--teal);color:#fff}
+  .tglab{font-size:11px;color:var(--mut);margin-right:2px}
+  table.mini{width:100%;border-collapse:collapse;font-size:12px}
+  table.mini th,table.mini td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.mini th{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  .ok{color:var(--good);font-weight:600}.bad{color:var(--red);font-weight:600}.mid{color:var(--warn);font-weight:600}
+  footer{color:var(--mut);font-size:11px;text-align:center;margin-top:26px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="flagband"><i style="background:#1A1A1A"></i><i style="background:#E0A900"></i><i style="background:#C0291A"></i></div>
+<header class="top"><div class="wrap">
+  <div><h1>Paediatric &amp; Adolescent HIV Integration</h1><div class="sub">Dashboard simulation · illustrative figures</div></div>
+  <span class="pill">Ministry of Health · Uganda</span>
+</div></header>
+
+<div class="wrap">
+    <div style="background:#fbecd9;border:1px solid #e7c79a;color:#7a4400;border-radius:8px;padding:8px 12px;margin:14px 0 0;font-size:12px">
+    <b>Illustrative figures only.</b> Every number here is invented to show the layout and behaviour — it is NOT from the live data. Real numbers appear when the developer connects this to the ODK data.
+  </div>
+  <div class="filters">
+    <span class="f">Region: Kampala</span><span class="f">District: All</span><span class="f">Facility: All</span>
+    <span class="f">Age band: All</span><span class="f">Period: All</span>
+    <span style="flex:1"></span><span>These filters apply to every section</span>
+  </div>
+
+  <nav role="tablist">
+    <button class="tab" role="tab" aria-selected="true"  data-p="ov">Overview</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="pald">pALD, treatment line &amp; commodities</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="int">Integration &amp; capacity</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="vl">Retention, viral load &amp; viraemia</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="ahd">AHD screening &amp; supplies</button>
+    <button class="tab" role="tab" aria-selected="false" data-p="dsd">DSD &amp; MMD</button>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <section class="panel active" id="ov">
+    <h2 class="sec">Programme at a glance — single combined numbers</h2>
+    <div class="grid g4">
+      <div class="card kpi"><div class="l">Children in care (0–19)</div><div class="v">107,592</div></div>
+      <div class="card kpi"><div class="l">Viral load suppression</div><div class="v good">85%</div><div class="f">of those with a result</div></div>
+      <div class="card kpi"><div class="l">pALD transition</div><div class="v good">66%</div><div class="f">of eligible</div></div>
+      <div class="card kpi"><div class="l">Appointments kept</div><div class="v good">87%</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Children in care, by age band</h3><p class="d">disaggregated — 0–4, 5–9, 10–14, 15–19</p><div class="box"><canvas id="ovAge"></canvas></div></div>
+      <div class="card"><h3>Children in care, by weight band</h3><p class="d">disaggregated — 3–5.9 … ≥30 kg</p><div class="box"><canvas id="ovWt"></canvas></div></div>
+    </div>
+  </section>
+
+  <!-- pALD + treatment line + commodities -->
+  <section class="panel" id="pald">
+    <h2 class="sec">Paediatric formulation transition</h2>
+    <div class="grid g4">
+      <div class="card kpi"><div class="l">On 120/60/10 mg</div><div class="v">14,800</div><div class="f">count</div></div>
+      <div class="card kpi"><div class="l">Eligible for 60/30/5 mg</div><div class="v">9,900</div><div class="f">count</div></div>
+      <div class="card kpi"><div class="l">On 60/30/5 mg</div><div class="v">6,530</div><div class="f">count</div></div>
+      <div class="card kpi"><div class="l">Eligibility gap</div><div class="v warn">3,370</div><div class="f">still to move</div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>Three-way transition</h3><p class="d">on 120/60/10 vs eligible vs on 60/30/5</p>
+        <div class="ctrls"><span class="tglab">View by:</span>
+          <div class="tg"><button aria-pressed="true" onclick="tw('w',this)">Weight band</button><button aria-pressed="false" onclick="tw('a',this)">Age band</button></div></div>
+        <div class="lg"><span><i style="background:#2a78d6"></i>on 120/60/10</span><span><i style="background:#eda100"></i>eligible</span><span><i style="background:#1baf7a"></i>on 60/30/5</span></div>
+        <div class="box"><canvas id="paldTw"></canvas></div>
+        <div class="note">Non-eligible bands show only the "on 120/60/10" bar — correct, not missing data.</div>
+      </div>
+      <div class="card"><h3>Transition rate (on 60/30/5 ÷ eligible)</h3><p class="d">eligible bands only · %</p><div class="box"><canvas id="paldRate"></canvas></div>
+        <div class="note">Denominator is eligible — never all children in care.</div></div>
+    </div>
+    <div class="card"><h3>Transition trend over time</h3><p class="d">rate onto 60/30/5 mg, by reporting quarter</p><div class="box"><canvas id="paldTrend"></canvas></div></div>
+
+    <h2 class="sec">Treatment line</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Children by treatment line</h3><p class="d">1st line worked out by subtraction</p><div class="box"><canvas id="tline"></canvas></div></div>
+      <div class="card"><h3>Share on each line</h3>
+        <table class="mini"><tr><th>Line</th><th>Count</th><th>Share of in care</th></tr>
+        <tr><td>1st line</td><td>94,800</td><td>88%</td></tr>
+        <tr><td>2nd line</td><td>11,200</td><td>10%</td></tr>
+        <tr><td>3rd line</td><td>1,592</td><td>1.5%</td></tr></table></div>
+    </div>
+
+    <h2 class="sec">Commodity availability</h2>
+    <div class="card"><h3>Stock status by medicine</h3><p class="d">status + days out of stock — NOT months of stock (that calc was broken)</p>
+      <table class="mini"><tr><th>Medicine</th><th>Status</th><th>Days out of stock</th></tr>
+      <tr><td>ABC/3TC/DTG 60/30/5 (pALD)</td><td class="ok">Adequate</td><td>0</td></tr>
+      <tr><td>ABC/3TC 120/60</td><td class="ok">Adequate</td><td>0</td></tr>
+      <tr><td>DTG 10 mg</td><td class="mid">Understocked</td><td>6</td></tr>
+      <tr><td>AZT/3TC 60/30</td><td class="ok">Adequate</td><td>2</td></tr>
+      <tr><td>Paediatric Darunavir</td><td class="bad">Stock-out</td><td>28</td></tr></table></div>
+  </section>
+
+  <!-- INTEGRATION -->
+  <section class="panel" id="int">
+    <h2 class="sec">Care models &amp; services</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Children in each care model</h3><p class="d">count + share of children in care</p>
+        <div class="lg"><span><i style="background:#1E5B73"></i>Chronic care</span><span><i style="background:#eda100"></i>Mixed OPD</span><span><i style="background:#7A6F60"></i>Other</span><span><i style="background:#C0291A"></i>Not accounted for</span></div>
+        <div class="box"><canvas id="intModel"></canvas></div></div>
+      <div class="card"><h3>Facilities on vs off their preferred model <span style="font-size:11px;color:#7A6F60;font-weight:400">(phase 2)</span></h3>
+        <p class="d">preferred: HC II–IV → Mixed OPD · Hospitals / RRH / NRH / CoE → Chronic care</p>
+        <div class="lg"><span><i style="background:#1f8a5b"></i>on preferred model</span><span><i style="background:#C0291A"></i>off preferred model (flagged)</span></div>
+        <div class="box"><canvas id="intPref"></canvas></div>
+        <div class="note warnflag">Concept only. The developer computes this per facility by comparing the facility LEVEL (A.1.1) with the MODEL it chose (D.1.5B), against the preferred-model rule from the national guide. Soft flag, not a fail. Suggested as a phase-2 indicator once model reporting is reliable.</div></div>
+    </div>
+    <h2 class="sec">Services integrated &amp; capacity building</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Services integrated</h3><p class="d">share of facilities</p><div class="box"><canvas id="intSvc"></canvas></div></div>
+      <div class="card"><h3>Capacity building this quarter, by cadre</h3><p class="d">people reached through supervision &amp; mentorship, by cadre</p>
+        <div class="lg"><span><i style="background:#1E5B73"></i>supervised</span><span><i style="background:#eda100"></i>mentored</span></div>
+        <div class="box"><canvas id="intCap"></canvas></div>
+        <div class="note">Ongoing effort (a flow), so it stays meaningful each quarter — unlike one-off "trained in integration", which saturates and was left out.</div></div>
+    </div>
+  </section>
+
+  <!-- Retention / VL / viraemia -->
+  <section class="panel" id="vl">
+    <h2 class="sec">Retention</h2>
+    <div class="grid g3">
+      <div class="card kpi"><div class="l">Expected for review</div><div class="v">28,393</div></div>
+      <div class="card kpi"><div class="l">Returned</div><div class="v">24,819</div></div>
+      <div class="card kpi"><div class="l">Kept appointments</div><div class="v good">87%</div><div class="f">combined — not by age</div></div>
+    </div>
+
+    <h2 class="sec">Viral load — by age band</h2>
+    <div class="card"><h3>Coverage vs suppression</h3><p class="d">bars, not a line — age bands are groups, not time</p>
+      <div class="lg"><span><i style="background:#eda100"></i>coverage</span><span><i style="background:#1E5B73"></i>suppression</span></div>
+      <div class="box"><canvas id="vlAge"></canvas></div></div>
+
+    <h2 class="sec">High-level viraemia (≥1000) — IAC performance &amp; drug-resistance pathway</h2>
+    <div class="card"><h3>IAC session distribution</h3><p class="d">standard = 3 sessions in 3 months</p>
+      <div class="ctrls"><span class="tglab">Age band:</span><div class="tg" id="hlvAgeTg"></div></div>
+      <div class="lg"><span><i style="background:#C0291A"></i>0–2 (not delivered)</span><span><i style="background:#1baf7a"></i>3 (on target)</span><span><i style="background:#eda100"></i>4+ (review)</span></div>
+      <div class="box"><canvas id="iac"></canvas></div>
+      <div class="note warnflag">0–2 sessions = firm flag (standard not delivered). 4+ = soft, non-threatening flag — may show an adherence or reach challenge to look into, not poor performance.</div>
+    </div>
+    <div class="card"><h3>Full high-level viraemia pathway (with HIV drug resistance)</h3><p class="d">the two-branch outcome after ≥3 IAC sessions</p>
+      <div id="hlvCasc"></div></div>
+
+    <h2 class="sec">Low-level viraemia (200–999) — its own cascade (Section K)</h2>
+    <div class="card"><h3>Full low-level viraemia pathway</h3><p class="d">spelled out separately from high-level</p>
+      <div id="llvCasc"></div>
+      <div class="note warnflag">Data column is named "HLV" but Section K is low-level — do not trust the column name.</div></div>
+  </section>
+
+  <!-- AHD -->
+  <section class="panel" id="ahd">
+    <h2 class="sec">Advanced HIV disease — every step shows its gap</h2>
+    <div class="ctrls">
+      <span class="tglab">Population:</span>
+      <div class="tg" id="ahdPop">
+        <button aria-pressed="true" data-v="newly">Newly diagnosed</button>
+        <button aria-pressed="false" data-v="nonsupp">Not suppressed</button>
+        <button aria-pressed="false" data-v="reeng">Returned to care</button>
+      </div>
+      <span class="tglab" style="margin-left:8px">Age band:</span>
+      <div class="tg" id="ahdAge"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>TB cascade</h3><p class="d">each step ÷ the step above · gaps flagged</p><div id="ahdTB"></div></div>
+      <div class="card"><h3>Malnutrition cascade</h3><p class="d">each step ÷ the step above · gaps flagged</p><div id="ahdNut"></div></div>
+    </div>
+    <div class="grid g2">
+      <div class="card"><h3>Meningitis — this quarter (10+ only)</h3><p class="d">screening &amp; treatment start</p><div id="ahdMenQ"></div></div>
+      <div class="card"><h3>Meningitis — completion (started ~6 months ago)</h3><p class="d">different cohort — not divided by this quarter</p><div id="ahdMenC"></div></div>
+    </div>
+    <h2 class="sec">AHD supplies — availability status (like the pALD commodities)</h2>
+    <div class="card"><h3>Supply availability by item</h3><p class="d">availability status + days out of stock — not a percentage</p>
+      <table class="mini"><tr><th>Item</th><th>Status</th><th>Days out of stock</th></tr>
+      <tr><td>Serum CrAg test kits</td><td class="mid">Understocked</td><td>7</td></tr>
+      <tr><td>VISITECT / PIMA CD4</td><td class="bad">Stock-out</td><td>21</td></tr>
+      <tr><td>TB LAM</td><td class="ok">Adequate</td><td>0</td></tr>
+      <tr><td>GeneXpert cartridges</td><td class="mid">Understocked</td><td>9</td></tr>
+      <tr><td>Lumbar puncture supplies</td><td class="ok">Adequate</td><td>0</td></tr>
+      <tr><td>Fluconazole</td><td class="ok">Adequate</td><td>1</td></tr>
+      <tr><td>Cotrimoxazole</td><td class="ok">Adequate</td><td>0</td></tr>
+      <tr><td>Anti-TB medicines</td><td class="ok">Adequate</td><td>2</td></tr>
+      <tr><td>Therapeutic feeds (RUTF)</td><td class="bad">Stock-out</td><td>18</td></tr></table></div>
+  </section>
+
+  <!-- DSD -->
+  <section class="panel" id="dsd">
+    <h2 class="sec">Multi-month dispensing &amp; DSD models</h2>
+    <div class="grid g2">
+      <div class="card"><h3>Multi-month dispensing</h3><p class="d">by age band 5–9, 10–14, 15–19</p>
+        <div class="lg"><span><i style="background:#C0291A"></i>3-month</span><span><i style="background:#eda100"></i>4–5 month</span><span><i style="background:#1E5B73"></i>6-month</span></div>
+        <div class="box"><canvas id="mmd"></canvas></div>
+        <div class="note">The 4–5 month band is restored (it was missing from the old export).</div></div>
+      <div class="card"><h3>DSD models — six categories (2024 framework)</h3><p class="d">one primary model per child</p><div class="box"><canvas id="dsdChart"></canvas></div>
+        <div class="note">Approaches (FBG, CCLAD, FTDR, YAPS, CRPDDP…) sit inside these six as labels — never their own bars.</div></div>
+    </div>
+  </section>
+
+  <footer>Simulation for discussion — illustrative figures, not live data. Built from the agreed numerator/denominator spec.</footer>
+</div>
+
+<script>
+const T='#1E5B73',TD='#123F52',G='#eda100',R='#C0291A',GR='#1f8a5b',SL='#7A6F60',B='#2a78d6',AQ='#1baf7a',VI='#4a3aa7';
+const gx={grid:{display:false},ticks:{font:{size:10},color:'#7A6F60'}};
+const gy=(m)=>({beginAtZero:true,max:m,grid:{color:'#E2D6C6'},ticks:{font:{size:10},color:'#7A6F60'}});
+const gyp={beginAtZero:true,max:100,grid:{color:'#E2D6C6'},ticks:{font:{size:10},color:'#7A6F60',callback:v=>v+'%'}};
+const base=(y)=>({responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gx,y:y||gy()}});
+const hbar=()=>({indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gy(),y:{grid:{display:false},ticks:{font:{size:10},color:'#7A6F60'}}}});
+let charts={},pald;
+function C(id,cfg){requestAnimationFrame(function(){try{if(charts[id]){charts[id].destroy();}const el=document.getElementById(id);if(el)charts[id]=new Chart(el,cfg);}catch(e){console.error('chart',id,e);}});}
+
+/* ---- cascade renderer: each step shows drop-off + gap flag ---- */
+function renderCascade(elId, steps){
+  // steps: [{label, n, color}] top to bottom. gap = previous - current.
+  const el=document.getElementById(elId); if(!el) return;
+  const top=steps[0].n||1;
+  let html='';
+  steps.forEach((s,i)=>{
+    const w=Math.max(14, Math.round((s.n/top)*100));
+    let chip='';
+    if(i>0){
+      const prev=steps[i-1].n; const lost=prev-s.n;
+      const dropPct = prev>0 ? Math.round((lost/prev)*100) : 0;
+      let cls='gap-ok', txt='−'+lost.toLocaleString()+' ('+dropPct+'% drop)';
+      if(dropPct>50){cls='gap-bad';} else if(dropPct>25){cls='gap-warn';}
+      chip='<span class="gapchip '+cls+'">'+txt+'</span>';
+    }
+    html+='<div class="cscrow"><div class="step" style="background:'+s.color+';width:'+w+'%">'+
+          '<span>'+s.label+'</span><b>'+s.n.toLocaleString()+'</b></div>'+chip+'</div>';
+  });
+  el.innerHTML=html;
+}
+
+/* ---- AHD data by population + age band ---- */
+const AHD={
+ newly:{ '0-4':{tb:[210,52,14,11], nut:[210,60,22,3], entry:210},
+         '5-9':{tb:[380,95,28,24], nut:[380,110,40,32], entry:380},
+         '10-14':{tb:[420,120,36,30], nut:[420,140,55,44], men:[64,18,13,9], menC:[16,10,4,1], entry:420},
+         '15-19':{tb:[301,88,26,22], nut:[301,95,40,30], men:[76,24,18,15], menC:[22,14,6,3], entry:301} },
+ nonsupp:{ '0-4':{tb:[180,44,12,9], nut:[180,50,18,3], entry:180},
+         '5-9':{tb:[340,80,24,20], nut:[340,95,34,27], entry:340},
+         '10-14':{tb:[500,130,40,33], nut:[500,150,60,48], men:[70,20,14,10], menC:[18,11,5,1], entry:500},
+         '15-19':{tb:[430,110,32,27], nut:[430,120,48,38], men:[82,26,19,15], menC:[24,15,7,2], entry:430} },
+ reeng:{ '0-4':{tb:[60,14,4,3], nut:[60,18,6,1], entry:60},
+         '5-9':{tb:[95,22,7,6], nut:[95,28,10,8], entry:95},
+         '10-14':{tb:[110,30,9,7], nut:[110,34,13,10], men:[16,5,3,2], menC:[5,3,1,0], entry:110},
+         '15-19':{tb:[95,26,8,6], nut:[95,28,11,8], men:[18,6,4,3], menC:[6,4,2,1], entry:95} }
+};
+let ahdPop='newly', ahdAge='10-14';
+function drawAHD(){
+  const d=AHD[ahdPop][ahdAge];
+  const cd4 = d.tb[0]; // treat CD4<200 as top for TB/nut branches (illustrative)
+  renderCascade('ahdTB',[
+    {label:'CD4 <200',n:cd4,color:TD},
+    {label:'TB tested',n:d.tb[1],color:R},
+    {label:'TB positive',n:d.tb[2],color:T},
+    {label:'On TB treatment',n:d.tb[3],color:GR}]);
+  renderCascade('ahdNut',[
+    {label:'CD4 <200',n:cd4,color:TD},
+    {label:'MUAC screened',n:d.nut[1],color:T},
+    {label:'Malnourished',n:d.nut[2],color:G},
+    {label:'Got nutrition intervention',n:d.nut[3],color:GR}]);
+  const menOK = !!d.men;
+  document.getElementById('ahdMenQ').innerHTML = menOK? '' : '<div class="note">Serum CrAg is done from 10 years only — no data for this age band.</div>';
+  document.getElementById('ahdMenC').innerHTML = menOK? '' : '<div class="note">Meningitis completion applies to 10+ only.</div>';
+  if(menOK){
+    renderCascade('ahdMenQ',[
+      {label:'Serum CrAg tested',n:d.men[0],color:TD},
+      {label:'CrAg positive',n:d.men[1],color:T},
+      {label:'LP done',n:d.men[2],color:SL},
+      {label:'Pre-emptive / CM started',n:d.men[3],color:GR}]);
+    renderCascade('ahdMenC',[
+      {label:'Expected to complete',n:d.menC[0],color:TD},
+      {label:'Completed & alive',n:d.menC[1],color:GR},
+      {label:'Lost to follow-up',n:d.menC[2],color:G},
+      {label:'Died',n:d.menC[3],color:R}]);
+  }
+}
+
+/* ---- viraemia cascades ---- */
+const HLVby={ '0-4':[300,190,42,148,60,88], '5-9':[520,320,70,250,110,140], '10-14':[1092,690,152,538,0,0], '15-19':[1300,820,180,640,0,0] };
+function hlvPathway(age){
+  // illustrative: entry, completed>=3, resuppressed, stillNS, referredDR, switched
+  const map={ '0-4':[300,180,40,140,120,95], '5-9':[520,310,70,240,205,170],
+              '10-14':[1092,690,150,540,470,400], '15-19':[1300,820,175,645,560,480] };
+  const d=map[age];
+  renderCascade('hlvCasc',[
+    {label:'High-level viraemia',n:d[0],color:TD},
+    {label:'Completed ≥3 IAC',n:d[1],color:T},
+    {label:'Re-suppressed (good)',n:d[2],color:GR},
+    {label:'Still non-suppressed',n:d[3],color:R},
+    {label:'Referred for HIV drug resistance testing',n:d[4],color:G},
+    {label:'Switched / optimised regimen',n:d[5],color:VI}]);
+}
+function llvPathway(age){
+  const map={ '0-4':[360,210,55,150], '5-9':[610,360,90,260],
+              '10-14':[1310,760,239,510], '15-19':[1500,880,318,540] };
+  const d=map[age];
+  renderCascade('llvCasc',[
+    {label:'Low-level viraemia',n:d[0],color:TD},
+    {label:'Completed ≥3 IAC',n:d[1],color:T},
+    {label:'Re-suppressed',n:d[2],color:GR},
+    {label:'Still low-level or progressed to high-level',n:d[3],color:G}]);
+}
+let hlvAge='10-14';
+const IACby={ '0-4':[140,190,170,300,140], '5-9':[210,280,255,450,210], '10-14':[420,560,510,900,430], '15-19':[380,500,470,820,390] };
+function drawIAC(age){
+  const d=IACby[age];
+  C('iac',{type:'bar',data:{labels:['0','1','2','3','4+'],datasets:[{data:d,backgroundColor:[R,R,R,GR,G],borderRadius:3}]},options:base()});
+  hlvPathway(age); llvPathway(age);
+}
+
+/* ---- age toggles builder ---- */
+function ageToggle(containerId, bands, cur, cb){
+  const c=document.getElementById(containerId); if(!c) return;
+  c.innerHTML=bands.map(b=>'<button data-v="'+b+'" aria-pressed="'+(b===cur?'true':'false')+'">'+b+'</button>').join('');
+  c.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
+    c.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    btn.setAttribute('aria-pressed','true'); cb(btn.dataset.v);
+  });
+}
+
+function build(p){
+ if(p==='ov'){
+  C('ovAge',{type:'bar',data:{labels:['0–4','5–9','10–14','15–19'],datasets:[{data:[18200,29400,27800,32200],backgroundColor:T,borderRadius:3}]},options:base()});
+  C('ovWt',{type:'bar',data:{labels:['3–5.9','6–9.9','10–13.9','14–19.9','20–24.9','25–29.9','≥30'],datasets:[{data:[4200,9800,15600,21000,19500,14200,23300],backgroundColor:G,borderRadius:3}]},options:base()});
+ }
+ if(p==='pald'){
+  drawTw('w');
+  C('paldRate',{type:'bar',data:{labels:['3–5.9','6–9.9','10–13.9','14–19.9','20–24.9'],datasets:[{data:[74,71,68,62,55],backgroundColor:GR,borderRadius:3}]},options:base(gyp)});
+  C('paldTrend',{type:'line',data:{labels:['Quarter 1','Quarter 2','Quarter 3','Quarter 4'],datasets:[{data:[18,34,52,66],borderColor:GR,backgroundColor:GR,tension:.3,pointRadius:4}]},options:base(gyp)});
+  C('tline',{type:'bar',data:{labels:['1st line','2nd line','3rd line'],datasets:[{data:[94800,11200,1592],backgroundColor:[T,G,SL],borderRadius:3}]},options:hbar()});
+ }
+ if(p==='int'){
+  C('intModel',{type:'doughnut',data:{labels:['Chronic care','Mixed OPD','Other','Not accounted for'],datasets:[{data:[65761,30995,685,10151],backgroundColor:[T,G,SL,R]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  C('intPref',{type:'bar',data:{labels:['HC II','HC III','HC IV','Hospital','RRH'],datasets:[{data:[12,40,22,9,4],backgroundColor:GR,borderRadius:3},{data:[3,11,6,2,1],backgroundColor:R,borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{...gx,stacked:true},y:{...gy(),stacked:true}}}});
+  C('intSvc',{type:'bar',data:{labels:['HIV testing & tx','Immunisation','Growth monitoring','Deworming','Sickle-cell'],datasets:[{data:[96,71,64,58,22],backgroundColor:T,borderRadius:3}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:gyp,y:{grid:{display:false},ticks:{font:{size:10},color:'#7A6F60'}}}}});
+  C('intCap',{type:'bar',data:{labels:['Medical/clinical','Nursing','Counselling','Pharmacy','Administrative','Support'],datasets:[{label:'supervised',data:[220,540,310,180,90,140],backgroundColor:T,borderRadius:3},{label:'mentored',data:[180,470,260,150,70,110],backgroundColor:G,borderRadius:3}]},options:base()});
+ }
+ if(p==='vl'){
+  C('vlAge',{type:'bar',data:{labels:['0–4','5–9','10–14','15–19'],datasets:[{data:[72,78,81,83],backgroundColor:G,borderRadius:3},{data:[80,84,86,85],backgroundColor:T,borderRadius:3}]},options:base(gyp)});
+  ageToggle('hlvAgeTg',['0-4','5-9','10-14','15-19'],hlvAge,(v)=>{hlvAge=v;drawIAC(v);});
+  drawIAC(hlvAge);
+ }
+ if(p==='ahd'){
+  document.querySelectorAll('#ahdPop button').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('#ahdPop button').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true'); ahdPop=b.dataset.v; drawAHD();});
+  ageToggle('ahdAge',['0-4','5-9','10-14','15-19'],ahdAge,(v)=>{ahdAge=v;drawAHD();});
+  drawAHD();
+ }
+ if(p==='dsd'){
+  C('mmd',{type:'bar',data:{labels:['5–9','10–14','15–19'],datasets:[
+    {data:[9200,8600,8254],backgroundColor:R,borderRadius:3},
+    {data:[3800,4100,3700],backgroundColor:G,borderRadius:3},
+    {data:[3900,4200,3903],backgroundColor:T,borderRadius:3}]},options:base()});
+  C('dsdChart',{type:'bar',data:{labels:['GMH','GMC','IMF-FTDR','IMF-FBIM','IMF adol.','IMC'],datasets:[{data:[17968,1969,11297,13173,3200,994],backgroundColor:[T,G,R,SL,VI,AQ],borderRadius:3}]},options:base()});
+ }
+}
+function drawTw(mode){
+ const w={labels:['3–5.9','6–9.9','10–13.9','14–19.9','20–24.9','25–29.9','≥30'],
+   old:[1400,2600,3400,3900,3500,3200,5800],el:[1100,2100,2700,2600,1400,null,null],nw:[820,1520,1850,1600,740,null,null]};
+ const a={labels:['<5','5–9','10–14','15–19'],old:[4200,7900,8600,11200],el:[3400,6500,null,null],nw:[2300,4230,null,null]};
+ const d=mode==='w'?w:a;
+ if(pald){pald.data.labels=d.labels;pald.data.datasets[0].data=d.old;pald.data.datasets[1].data=d.el;pald.data.datasets[2].data=d.nw;pald.update();return;}
+ pald=new Chart(document.getElementById('paldTw'),{type:'bar',data:{labels:d.labels,datasets:[
+   {data:d.old,backgroundColor:B,borderRadius:2},{data:d.el,backgroundColor:G,borderRadius:2},{data:d.nw,backgroundColor:AQ,borderRadius:2}]},options:base()});
+}
+function tw(m,btn){btn.parentNode.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'));btn.setAttribute('aria-pressed','true');drawTw(m);}
+
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected','false'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.setAttribute('aria-selected','true');
+  document.getElementById(t.dataset.p).classList.add('active');
+  build(t.dataset.p); window.scrollTo({top:0,behavior:'smooth'});
+}));
+window.addEventListener('load',()=>build('ov'));
+</script>
+</body>
+</html>

@@ -1,16 +1,16 @@
 import type { Metadata } from "next"
-import Layout from "@/components/cmsfullform/layout"
+import { AnalyticsSimLayout } from "@/components/analytics/sim/AnalyticsSimLayout"
 import { AHDPageContent } from "@/components/analytics/ahd-page-content"
 
 export const metadata: Metadata = {
-  title: "AHD Screening | CALHIV Dashboard",
-  description: "Advanced HIV disease screening: CD4, TB, CRAG (10+ years), malnutrition.",
+  title: "AHD screening & supplies | Paediatric HIV",
+  description: "Advanced HIV disease cascades and supply availability.",
 }
 
-export default function AHDPage() {
+export default function AhdPage() {
   return (
-    <Layout>
+    <AnalyticsSimLayout>
       <AHDPageContent />
-    </Layout>
+    </AnalyticsSimLayout>
   )
 }

@@ -1,0 +1,391 @@
+/* Matches PaedAdol_HIV_Dashboard_Simulation.html */
+.pead-sim {
+  --ink: #1a1a1a;
+  --soft: #4a5a68;
+  --mut: #7a6f60;
+  --line: #e2d6c6;
+  --bg: #f4ece2;
+  --card: #fff;
+  --teal: #1e5b73;
+  --teal-d: #123f52;
+  --gold: #e0a900;
+  --red: #c0291a;
+  --good: #1f8a5b;
+  --warn: #b85c00;
+  --mist: #f1e7da;
+  --tint: #faf5ee;
+  --blue: #2a78d6;
+  --aqua: #1baf7a;
+  --violet: #4a3aa7;
+  --chart-1: 197 59% 28%;
+  --chart-2: 43 100% 47%;
+  --chart-3: 158 64% 33%;
+  --chart-4: 5 76% 43%;
+  --chart-5: 211 68% 50%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+
+.pead-sim .sim-flagband {
+  height: 8px;
+  display: flex;
+}
+.pead-sim .sim-flagband i {
+  flex: 1;
+}
+
+.pead-sim .sim-top {
+  background: var(--ink);
+  color: #fff;
+  padding: 16px 0;
+}
+.pead-sim .sim-top .sim-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pead-sim .sim-top h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 650;
+}
+.pead-sim .sim-top .sub {
+  font-size: 12px;
+  color: #c9bfa9;
+}
+.pead-sim .sim-pill {
+  font-size: 11px;
+  background: #ffffff22;
+  border: 1px solid #ffffff3a;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.pead-sim .sim-wrap {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 20px 60px;
+}
+
+.pead-sim .sim-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 16px 0;
+  font-size: 12px;
+  color: var(--mut);
+}
+.pead-sim .sim-filters .f {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 9px;
+  color: var(--soft);
+  background: var(--tint);
+  font-size: 12px;
+  height: 32px;
+}
+.pead-sim .sim-filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 11px;
+  color: var(--mut);
+}
+.pead-sim .sim-filters select,
+.pead-sim .sim-filters input {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 5px 9px;
+  color: var(--soft);
+  background: var(--tint);
+  font-size: 12px;
+  min-width: 120px;
+  height: 32px;
+}
+
+.pead-sim .sim-nav {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+.pead-sim .sim-tab {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 12px 13px;
+  color: var(--soft);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.pead-sim .sim-tab[data-active="true"] {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+}
+
+.pead-sim .sim-sec {
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal-d);
+  font-weight: 700;
+  border-left: 3px solid var(--teal);
+  padding-left: 8px;
+  margin: 22px 0 12px;
+}
+
+.pead-sim .sim-grid {
+  display: grid;
+  gap: 14px;
+}
+.pead-sim .sim-g2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.pead-sim .sim-g3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+.pead-sim .sim-g4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+@media (max-width: 860px) {
+  .pead-sim .sim-g2,
+  .pead-sim .sim-g3,
+  .pead-sim .sim-g4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pead-sim .sim-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+.pead-sim .sim-card h3 {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.pead-sim .sim-card .d {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--mut);
+}
+
+.pead-sim .sim-kpi .l {
+  font-size: 12px;
+  color: var(--mut);
+}
+.pead-sim .sim-kpi .v {
+  font-size: 26px;
+  font-weight: 680;
+  margin-top: 2px;
+  color: var(--ink);
+}
+.pead-sim .sim-kpi .v.good {
+  color: var(--good);
+}
+.pead-sim .sim-kpi .v.warn {
+  color: var(--warn);
+}
+.pead-sim .sim-kpi .v.bad {
+  color: var(--red);
+}
+.pead-sim .sim-kpi .f {
+  font-size: 11px;
+  color: var(--soft);
+  margin-top: 3px;
+}
+
+.pead-sim .sim-box {
+  position: relative;
+  height: 210px;
+  width: 100%;
+  min-width: 0;
+}
+
+.pead-sim .sim-lg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--soft);
+  margin-bottom: 6px;
+}
+.pead-sim .sim-lg span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.pead-sim .sim-lg i {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.pead-sim .sim-cscrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.pead-sim .sim-step {
+  border-radius: 7px;
+  color: #fff;
+  padding: 8px 11px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  min-width: 150px;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.pead-sim .sim-step b {
+  font-weight: 680;
+}
+.pead-sim .sim-gapchip {
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.pead-sim .gap-ok {
+  background: #e0f0e7;
+  color: #155;
+}
+.pead-sim .gap-warn {
+  background: #fbecd9;
+  color: #7a4400;
+}
+.pead-sim .gap-bad {
+  background: #f8e1de;
+  color: #8a1f16;
+  border: 1px dashed #c0291a;
+  font-weight: 600;
+}
+
+.pead-sim .sim-note {
+  font-size: 11.5px;
+  color: var(--soft);
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 11px;
+  margin-top: 10px;
+  line-height: 1.5;
+}
+.pead-sim .sim-note.warnflag {
+  background: #fbecd9;
+  border-color: #e7c79a;
+  color: #7a4400;
+}
+
+.pead-sim .sim-ctrls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.pead-sim .sim-tg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.pead-sim .sim-tg button {
+  border: 0;
+  background: #fff;
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 11px;
+  cursor: pointer;
+  color: var(--soft);
+}
+.pead-sim .sim-tg button[aria-pressed="true"] {
+  background: var(--teal);
+  color: #fff;
+}
+.pead-sim .sim-tglab {
+  font-size: 11px;
+  color: var(--mut);
+  margin-right: 2px;
+}
+
+.pead-sim table.sim-mini {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.pead-sim table.sim-mini th,
+.pead-sim table.sim-mini td {
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.pead-sim table.sim-mini th {
+  color: var(--mut);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.pead-sim .ok {
+  color: var(--good);
+  font-weight: 600;
+}
+.pead-sim .bad {
+  color: var(--red);
+  font-weight: 600;
+}
+.pead-sim .mid {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.pead-sim .sim-footer {
+  color: var(--mut);
+  font-size: 11px;
+  text-align: center;
+  margin-top: 26px;
+  line-height: 1.7;
+}
+
+.pead-sim .sim-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #c9bfa9;
+}
+.pead-sim .sim-user button {
+  border: 1px solid #ffffff3a;
+  background: transparent;
+  color: #fff;
+  border-radius: 7px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
